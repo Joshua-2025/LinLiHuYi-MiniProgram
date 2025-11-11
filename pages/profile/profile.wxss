@@ -1,0 +1,203 @@
+/* pages/profile/profile.wxss */
+page {
+    background: #f5f5f5;
+    height: 100%;
+  }
+  
+  .profile-container {
+    min-height: 100vh;
+    background: #f5f5f5;
+  }
+  
+  /* 用户信息头部 */
+  .user-header {
+    background: linear-gradient(135deg, #07c160, #09bb07);
+    padding: 120rpx 30rpx 100rpx 30rpx;
+    display: flex;
+    align-items: center;
+    color: white;
+    position: relative;
+    margin-bottom: 20rpx;
+  }
+  
+  .user-header::before {
+    content: '';
+    position: absolute;
+    top: -100rpx;
+    left: 0;
+    right: 0;
+    height: 100rpx;
+    background: linear-gradient(135deg, #07c160, #09bb07);
+  }
+  
+  .user-avatar {
+    width: 120rpx;
+    height: 120rpx;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4rpx solid rgba(255,255,255,0.3);
+    margin-right: 30rpx;
+    background: rgba(255,255,255,0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .user-avatar image {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .default-avatar-text {
+    font-size: 48rpx;
+    color: #07c160;
+  }
+  
+  .user-info {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .user-name {
+    font-size: 36rpx;
+    font-weight: bold;
+    margin-bottom: 10rpx;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .user-location {
+    font-size: 28rpx;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 8rpx;
+  }
+  
+  .edit-icon {
+    font-size: 24rpx;
+    opacity: 0.7;
+  }
+  
+  .login-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 2rpx solid rgba(255,255,255,0.5);
+    border-radius: 50rpx;
+    font-size: 28rpx;
+    padding: 16rpx 32rpx;
+    margin: 0;
+    line-height: 1;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  .logout-btn {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 2rpx solid rgba(255,255,255,0.3);
+    border-radius: 50rpx;
+    font-size: 24rpx;
+    padding: 12rpx 24rpx;
+    margin: 0;
+    line-height: 1;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  .login-btn::after, .logout-btn::after {
+    border: none;
+  }
+  
+  /* 数据统计 */
+  .stats-section {
+    background: white;
+    margin: -30rpx 30rpx 30rpx 30rpx;
+    border-radius: 20rpx;
+    box-shadow: 0 8rpx 30rpx rgba(0,0,0,0.08);
+    padding: 30rpx 0;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .stats-section {
+    display: flex;
+  }
+  
+  .stat-item {
+    flex: 1;
+    text-align: center;
+    border-right: 1rpx solid #f8f8f8;
+  }
+  
+  .stat-item:last-child {
+    border-right: none;
+  }
+  
+  .stat-number {
+    font-size: 36rpx;
+    color: #07c160;
+    font-weight: bold;
+    margin-bottom: 8rpx;
+  }
+  
+  .stat-label {
+    font-size: 26rpx;
+    color: #666;
+  }
+  
+  /* 功能菜单 */
+  .menu-section {
+    background: white;
+    margin: 0 30rpx 30rpx 30rpx;
+    border-radius: 20rpx;
+    box-shadow: 0 8rpx 30rpx rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+  
+  .menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 32rpx 30rpx;
+    border-bottom: 1rpx solid #f8f8f8;
+    transition: background-color 0.2s;
+  }
+  
+  .menu-item:active {
+    background-color: #f8f8f8;
+  }
+  
+  .menu-item:last-child {
+    border-bottom: none;
+  }
+  
+  .menu-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  .menu-icon {
+    font-size: 36rpx;
+    margin-right: 24rpx;
+    width: 40rpx;
+    text-align: center;
+  }
+  
+  .menu-text {
+    font-size: 32rpx;
+    color: #333;
+  }
+  
+  .menu-arrow {
+    font-size: 28rpx;
+    color: #ccc;
+  }
+  
+  /* 底部安全区域 */
+  .safe-area {
+    height: 60rpx;
+    background: #f5f5f5;
+  }

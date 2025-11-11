@@ -1,0 +1,109 @@
+<!-- pages/profile/profile.wxml -->
+<view class="profile-container">
+  
+  <!-- 用户信息头部 -->
+  <view class="user-header">
+    <view class="user-avatar">
+      <image wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" mode="aspectFill"></image>
+      <text wx:else class="default-avatar-text">👤</text>
+    </view>
+    <view class="user-info">
+      <view class="user-name">{{userInfo.nickName || '微信用户'}}</view>
+      <view class="user-location" bindtap="onSetCommunity">
+        <text class="location-text">{{userInfo.community || '点击设置小区'}}</text>
+        <text class="edit-icon">✏️</text>
+      </view>
+    </view>
+    <button class="login-btn" wx:if="{{!userInfo.nickName}}" bindtap="getUserProfile">点击登录</button>
+    <button class="logout-btn" wx:else bindtap="onLogout">退出登录</button>
+  </view>
+
+  <!-- 数据统计 -->
+  <view class="stats-section">
+    <view class="stat-item" bindtap="navigateToMyProducts">
+      <view class="stat-number">{{myProductsCount}}</view>
+      <view class="stat-label">我的发布</view>
+    </view>
+    <view class="stat-item" bindtap="navigateToMyFavorites">
+      <view class="stat-number">{{myFavoritesCount}}</view>
+      <view class="stat-label">我的收藏</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number">{{soldCount}}</view>
+      <view class="stat-label">已售出</view>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="menu-item" bindtap="navigateToMyProducts">
+      <view class="menu-left">
+        <text class="menu-icon">📦</text>
+        <text class="menu-text">我发布的商品</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="navigateToMyFavorites">
+      <view class="menu-left">
+        <text class="menu-icon">❤️</text>
+        <text class="menu-text">我收藏的商品</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="onSetCommunity">
+      <view class="menu-left">
+        <text class="menu-icon">🏠</text>
+        <text class="menu-text">设置小区</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="updateUserInfo">
+      <view class="menu-left">
+        <text class="menu-icon">👤</text>
+        <text class="menu-text">修改个人信息</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="contactCustomerService">
+      <view class="menu-left">
+        <text class="menu-icon">📞</text>
+        <text class="menu-text">联系客服</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="aboutApp">
+      <view class="menu-left">
+        <text class="menu-icon">ℹ️</text>
+        <text class="menu-text">关于邻里互易</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <!-- 在功能菜单中添加 -->
+<view class="menu-item" bindtap="navigateToMessages">
+  <view class="menu-left">
+    <text class="menu-icon">💬</text>
+    <text class="menu-text">我的消息</text>
+    <text class="message-badge" wx:if="{{unreadCount > 0}}">{{unreadCount}}</text>
+  </view>
+  <text class="menu-arrow">></text>
+</view>
+    <!-- 在功能菜单中添加，只有管理员显示 -->
+<view class="menu-item" wx:if="{{userInfo.isAdmin}}" bindtap="navigateToAdmin">
+  <view class="menu-left">
+    <text class="menu-icon">⚙️</text>
+    <text class="menu-text">管理后台</text>
+  </view>
+  <text class="menu-arrow">></text>
+</view>
+  </view>
+
+  <!-- 底部安全区域 -->
+  <view class="safe-area"></view>
+
+</view>

@@ -1,0 +1,83 @@
+<!-- pages/myProducts/myProducts.wxml -->
+<view class="my-products-container">
+  
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">我的发布</text>
+    <text class="product-count">共{{products.length}}件商品</text>
+  </view>
+
+  <!-- 商品列表 -->
+  <view class="products-list">
+    <block wx:for="{{products}}" wx:key="_id">
+      <view class="product-item" bindtap="onProductTap" data-id="{{item._id}}">
+        <!-- 商品图片 -->
+        <view class="product-image">
+          <image 
+            wx:if="{{item.images && item.images.length > 0}}" 
+            src="{{item.images[0]}}" 
+            mode="aspectFill"
+            class="product-img"
+          ></image>
+          <view wx:else class="no-image">
+            <text class="no-image-text">暂无图片</text>
+          </view>
+        </view>
+        
+        <!-- 商品信息 -->
+        <view class="product-info">
+          <view class="product-header">
+            <view class="product-title">{{item.title}}</view>
+            <view class="product-status {{getStatusClass(item.status)}}">
+              {{getStatusText(item.status)}}
+            </view>
+          </view>
+          
+          <view class="product-price">¥{{item.price}}</view>
+          
+          <!-- 浏览信息移到商品信息区域 -->
+          <view class="product-meta">
+            <text class="publish-time">{{formatTime(item.createTime)}}</text>
+            <text class="view-count">浏览: {{item.viewCount || 0}}</text>
+          </view>
+        </view>
+
+        <!-- 操作按钮 - 调整位置到右侧 -->
+        <view class="action-buttons">
+          <view 
+            class="action-btn edit-btn" 
+            catchtap="onEditProduct" 
+            data-id="{{item._id}}"
+            wx:if="{{item.status === 1}}"
+          >
+            编辑
+          </view>
+          <view 
+            class="action-btn {{item.status === 1 ? 'offline-btn' : 'online-btn'}}" 
+            catchtap="onToggleStatus" 
+            data-id="{{item._id}}"
+            data-status="{{item.status}}"
+          >
+            {{item.status === 1 ? '下架' : '上架'}}
+          </view>
+          <view 
+            class="action-btn delete-btn" 
+            catchtap="onDeleteProduct" 
+            data-id="{{item._id}}"
+          >
+            删除
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{products.length === 0}}">
+    <text class="empty-icon">📦</text>
+    <text class="empty-text">暂无发布的商品</text>
+    <text class="empty-tip">去发布一个商品吧</text>
+    <button class="publish-btn" bindtap="goToPublish">立即发布</button>
+  </view>
+
+</view>

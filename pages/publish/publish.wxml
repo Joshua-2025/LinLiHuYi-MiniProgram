@@ -1,0 +1,130 @@
+<!--pages/publish/publish.wxml-->
+<!-- pages/publish/publish.wxml -->
+<view class="publish-container">
+  <view class="form-section">
+    
+    <!-- 商品图片上传 -->
+    <view class="form-item">
+      <view class="form-label">商品图片</view>
+      <view class="image-upload">
+        <block wx:for="{{images}}" wx:key="*this">
+          <view class="image-item">
+            <image src="{{item}}" mode="aspectFill" class="preview-image"></image>
+            <view class="delete-btn" bindtap="deleteImage" data-index="{{index}}">×</view>
+          </view>
+        </block>
+        <view class="add-image" bindtap="chooseImage" wx:if="{{images.length < 9}}">
+          <icon type="add" size="24" color="#ccc"></icon>
+          <text class="add-text">添加图片</text>
+        </view>
+      </view>
+      <view class="tip">最多可上传9张图片</view>
+    </view>
+
+    <!-- 商品标题 -->
+    <view class="form-item">
+      <view class="form-label">商品标题</view>
+      <input 
+        class="form-input" 
+        placeholder="请输入商品标题" 
+        value="{{title}}"
+        bindinput="onInput"
+        data-field="title"
+        maxlength="30"
+      />
+      <view class="char-count">{{title.length}}/30</view>
+    </view>
+
+    <!-- 商品描述 -->
+    <view class="form-item">
+      <view class="form-label">商品描述</view>
+      <textarea 
+        class="form-textarea" 
+        placeholder="请详细描述商品信息、使用情况等"
+        value="{{description}}"
+        bindinput="onInput"
+        data-field="description"
+        maxlength="500"
+      />
+      <view class="char-count">{{description.length}}/500</view>
+    </view>
+
+    <!-- 价格 -->
+    <view class="form-item">
+      <view class="form-label">价格</view>
+      <view class="price-input">
+        <text class="price-symbol">¥</text>
+        <input 
+          class="form-input price" 
+          placeholder="0.00" 
+          type="digit"
+          value="{{price}}"
+          bindinput="onInput"
+          data-field="price"
+        />
+      </view>
+    </view>
+
+    <!-- 原价 -->
+    <view class="form-item">
+      <view class="form-label">原价（可选）</view>
+      <view class="price-input">
+        <text class="price-symbol">¥</text>
+        <input 
+          class="form-input price" 
+          placeholder="0.00" 
+          type="digit"
+          value="{{originalPrice}}"
+          bindinput="onInput"
+          data-field="originalPrice"
+        />
+      </view>
+    </view>
+
+    <!-- 分类 -->
+    <view class="form-item">
+      <view class="form-label">分类</view>
+      <picker 
+        range="{{categories}}" 
+        value="{{categoryIndex}}" 
+        bindchange="onCategoryChange"
+      >
+        <view class="picker {{category ? '' : 'placeholder'}}">
+          {{category ? category : '请选择分类'}}
+        </view>
+      </picker>
+    </view>
+
+    <!-- 联系方式 -->
+    <view class="form-item">
+      <view class="form-label">联系方式</view>
+      <input 
+        class="form-input" 
+        placeholder="请输入手机号码" 
+        type="number"
+        value="{{phone}}"
+        bindinput="onInput"
+        data-field="phone"
+        maxlength="11"
+      />
+    </view>
+
+    <!-- 所在小区 -->
+    <view class="form-item">
+      <view class="form-label">所在小区</view>
+      <input 
+        class="form-input" 
+        placeholder="请输入您所在的小区" 
+        value="{{community}}"
+        bindinput="onInput"
+        data-field="community"
+      />
+    </view>
+
+  </view>
+
+  <!-- 发布按钮 -->
+  <view class="publish-btn-section">
+    <button class="publish-btn" bindtap="submitForm">发布商品</button>
+  </view>
+</view>

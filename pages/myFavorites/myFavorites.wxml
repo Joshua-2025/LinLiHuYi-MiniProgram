@@ -1,0 +1,43 @@
+<!-- pages/myFavorites/myFavorites.wxml -->
+<view class="favorites-container">
+  
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">我的收藏</text>
+    <text class="product-count">共{{favorites.length}}件商品</text>
+  </view>
+
+  <!-- 收藏列表 -->
+  <view class="favorites-list">
+    <block wx:for="{{favorites}}" wx:key="_id">
+      <view class="favorite-item" bindtap="onProductTap" data-id="{{item.productId}}">
+        <view class="product-image">
+          <text wx:if="{{item.productInfo.images && item.productInfo.images[0]}}">
+            <image src="{{item.productInfo.images[0]}}" mode="aspectFill"></image>
+          </text>
+          <text wx:else class="no-image-text">暂无图片</text>
+        </view>
+        
+        <view class="product-info">
+          <view class="product-title">{{item.productInfo.title}}</view>
+          <view class="product-price">¥{{item.productInfo.price}}</view>
+          <view class="product-meta">
+            <text class="product-location">{{item.productInfo.sellerInfo.community}}</text>
+            <text class="product-time">{{formatTime(item.productInfo.createTime)}}</text>
+          </view>
+        </view>
+
+        <!-- 取消收藏按钮 - 使用 catchtap 阻止事件冒泡 -->
+        <view class="unfavorite-btn" catchtap="onUnfavorite" data-id="{{item._id}}">取消收藏</view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{favorites.length === 0}}">
+    <text class="empty-icon">❤️</text>
+    <text class="empty-text">暂无收藏的商品</text>
+    <text class="empty-tip">去发现一些好物吧</text>
+  </view>
+
+</view>

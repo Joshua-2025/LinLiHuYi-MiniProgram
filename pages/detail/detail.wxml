@@ -1,0 +1,134 @@
+<!--pages/detail/detail.wxml-->
+<view class="detail-container" wx:if="{{product}}">
+  
+  <!-- 商品图片轮播 -->
+  <swiper class="image-swiper" indicator-dots="{{product.images && product.images.length > 1}}" autoplay="false">
+    <block wx:for="{{product.images}}" wx:key="*this">
+      <swiper-item>
+        <image src="{{item}}" mode="aspectFit" class="product-image"></image>
+      </swiper-item>
+    </block>
+    <swiper-item wx:if="{{!product.images || product.images.length === 0}}">
+      <view class="no-image">暂无图片</view>
+    </swiper-item>
+  </swiper>
+
+  <!-- 商品基本信息 -->
+  <view class="info-section">
+    <view class="price-section">
+      <text class="current-price">¥{{product.price}}</text>
+      <text class="original-price" wx:if="{{product.originalPrice}}">原价¥{{product.originalPrice}}</text>
+    </view>
+    
+    <!-- 商品状态显示 -->
+    <view class="status-section">
+      <view class="product-status {{getStatusClass(product.status)}}">
+        {{getStatusText(product.status)}}
+      </view>
+    </view>
+    
+    <view class="title">{{product.title}}</view>
+    <view class="description">{{product.description}}</view>
+    <view class="meta-info">
+      <text class="category">分类：{{product.category}}</text>
+      <text class="views">浏览：{{product.viewCount}}次</text>
+    </view>
+    <view class="publish-time">发布时间：{{formatTime(product.createTime)}}</view>
+  </view>
+
+  <!-- 卖家信息 -->
+  <view class="seller-section">
+    <view class="section-title">卖家信息</view>
+    <view class="seller-info">
+      <view class="seller-avatar">
+        <image src="{{product.sellerInfo.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+      </view>
+      <view class="seller-details">
+        <view class="seller-name">{{product.sellerInfo.nickName}}</view>
+        <view class="seller-location">{{product.sellerInfo.community}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 卖家操作区域 -->
+  <view class="seller-actions" wx:if="{{isSeller}}">
+    <view class="action-title">我的商品管理</view>
+    <view class="action-buttons">
+      <!-- 在售状态显示标记为已售出和下架 -->
+      <view class="button-row" wx:if="{{product.status === 1}}">
+        <button class="btn sold-btn" bindtap="markAsSold">
+          <text class="btn-icon">✅</text>
+          <text class="btn-text">标记已售出</text>
+        </button>
+        <button class="btn offline-btn" bindtap="offlineProduct">
+          <text class="btn-icon">⏸️</text>
+          <text class="btn-text">下架</text>
+        </button>
+      </view>
+      
+      <!-- 已售出状态显示重新上架 -->
+      <view class="button-row" wx:if="{{product.status === 3}}">
+        <button class="btn relist-btn" bindtap="relistProduct">
+          <text class="btn-icon">🔄</text>
+          <text class="btn-text">重新上架</text>
+        </button>
+      </view>
+      
+      <!-- 已下架状态显示重新上架 -->
+      <view class="button-row" wx:if="{{product.status === 2}}">
+        <button class="btn relist-btn" bindtap="relistProduct">
+          <text class="btn-icon">🔄</text>
+          <text class="btn-text">重新上架</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 买家操作区域 -->
+  <view class="buyer-actions" wx:else>
+    <view class="action-buttons">
+      <button class="btn contact-btn" bindtap="contactSeller">
+        <text class="btn-icon">💬</text>
+        <text class="btn-text">联系卖家</text>
+      </button>
+      <button class="btn favorite-btn {{isFavorite ? 'favorited' : ''}}" bindtap="toggleFavorite">
+        <text class="btn-icon">{{isFavorite ? '❤️' : '🤍'}}</text>
+        <text class="btn-text">{{isFavorite ? '已收藏' : '收藏'}}</text>
+      </button>
+    </view>
+    
+    <!-- 已售出商品提示 -->
+    <view class="sold-notice" wx:if="{{product.status === 3}}">
+      <text class="notice-icon">ℹ️</text>
+      <text class="notice-text">该商品已售出</text>
+    </view>
+    
+    <!-- 已下架商品提示 -->
+    <view class="offline-notice" wx:if="{{product.status === 2}}">
+      <text class="notice-icon">⏸️</text>
+      <text class="notice-text">该商品已下架</text>
+    </view>
+  </view>
+
+  <!-- 留言列表 -->
+  <view class="message-section" wx:if="{{showMessages && messages.length > 0}}">
+    <view class="section-title">留言记录</view>
+    <view class="message-list">
+      <block wx:for="{{messages}}" wx:key="_id">
+        <view class="message-item {{item.fromUserId === currentUserId ? 'own-message' : 'other-message'}}">
+          <image class="message-avatar" src="{{item.fromUserInfo.avatarUrl || '/images/default-avatar.png'}}"></image>
+          <view class="message-content">
+            <view class="message-sender">{{item.fromUserInfo.nickName}}</view>
+            <view class="message-text">{{item.content}}</view>
+            <view class="message-time">{{formatTime(item.createTime)}}</view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+</view>
+
+<view class="loading" wx:else>
+  <text>加载中...</text>
+</view>

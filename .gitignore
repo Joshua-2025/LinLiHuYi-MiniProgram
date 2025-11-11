@@ -1,0 +1,31 @@
+# 微信小程序配置文件（在上级目录）
+../project.config.json
+../project.private.config.json
+../uploadCloudFunction.sh
+
+# 云函数目录（如果需要单独管理）
+../cloudfunctions/
+
+# 图片和资源文件（建议单独管理或使用CDN）
+../*.png
+
+# 系统文件
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# 日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 依赖目录
+node_modules/
+
+# IDE文件
+.vscode/
+.idea/
+*.swp
+*.swo

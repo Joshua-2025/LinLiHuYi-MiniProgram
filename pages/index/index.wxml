@@ -1,0 +1,62 @@
+<!-- pages/index/index.wxml -->
+<view class="container">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-box" bindtap="onSearchTap">
+      <icon type="search" size="14"></icon>
+      <text class="search-text">搜索你想要的物品...</text>
+    </view>
+  </view>
+
+  <!-- 分类导航 -->
+  <view class="category-nav">
+    <view class="category-title">分类浏览</view>
+    <view class="category-list">
+      <block wx:for="{{categories}}" wx:key="id">
+        <view class="category-item" bindtap="onCategoryTap" data-id="{{item.id}}">
+          <view class="category-icon">{{item.icon}}</view>
+          <text class="category-name">{{item.name}}</text>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 商品列表 -->
+  <view class="product-section">
+    <view class="section-title">最新发布</view>
+    <view class="product-list">
+      <block wx:for="{{products}}" wx:key="_id">
+        <view class="product-item" bindtap="onProductTap" data-id="{{item._id}}">
+          <!-- 修改图片显示部分 -->
+          <view class="product-image">
+            <image 
+              wx:if="{{item.images && item.images.length > 0}}" 
+              src="{{item.images[0]}}" 
+              mode="aspectFill"
+              class="product-img"
+            ></image>
+            <view wx:else class="no-image">
+              <text class="no-image-text">暂无图片</text>
+            </view>
+          </view>
+          <view class="product-info">
+            <view class="product-title">{{item.title}}</view>
+            <view class="product-price">¥{{item.price}}</view>
+            <view class="product-meta">
+              <text class="product-location">{{item.sellerInfo.community}}</text>
+              <text class="product-time">{{formatTime(item.createTime)}}</text>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore}}">
+    <text>加载中...</text>
+  </view>
+  <view class="load-more" wx:else>
+    <text>没有更多了</text>
+  </view>
+</view>

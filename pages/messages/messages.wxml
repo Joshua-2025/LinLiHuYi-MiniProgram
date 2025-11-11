@@ -1,0 +1,55 @@
+<!-- pages/messages/messages.wxml -->
+<view class="messages-container">
+  
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">我的消息</text>
+  </view>
+
+  <!-- 消息列表 -->
+  <view class="messages-list">
+    <block wx:for="{{messages}}" wx:key="_id">
+      <view class="message-item">
+        <!-- 商品信息 -->
+        <view class="product-info" bindtap="goToProductDetail" data-id="{{item.productId}}">
+          <view class="product-title">{{item.productInfo.title}}</view>
+          <view class="product-price">¥{{item.productInfo.price}}</view>
+        </view>
+
+        <!-- 留言内容 -->
+        <view class="message-content">
+          <view class="message-header">
+            <image class="user-avatar" src="{{item.fromUserInfo.avatarUrl || '/images/default-avatar.png'}}"></image>
+            <view class="user-info">
+              <text class="user-name">{{item.fromUserInfo.nickName}}</text>
+              <text class="message-time">{{formatTime(item.createTime)}}</text>
+            </view>
+          </view>
+          <view class="message-text">{{item.content}}</view>
+        </view>
+
+        <!-- 回复区域 -->
+        <view class="reply-section" wx:if="{{item.reply}}">
+          <view class="reply-header">
+            <text class="reply-label">我的回复</text>
+            <text class="reply-time">{{formatTime(item.replyTime)}}</text>
+          </view>
+          <view class="reply-text">{{item.reply}}</view>
+        </view>
+
+        <!-- 回复按钮 -->
+        <view class="action-buttons" wx:if="{{!item.reply}}">
+          <button class="reply-btn" bindtap="onReply" data-item="{{item}}">回复</button>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{messages.length === 0}}">
+    <text class="empty-icon">💬</text>
+    <text class="empty-text">暂无消息</text>
+    <text class="empty-tip">当有人给你的商品留言时，会显示在这里</text>
+  </view>
+
+</view>
