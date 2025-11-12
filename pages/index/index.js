@@ -9,7 +9,7 @@ Page({
         {id: 4, name: '图书文具', icon: '📚'},
         {id: 5, name: '母婴用品', icon: '👶'},
         {id: 6, name: '运动户外', icon: '⚽'},
-        {id: 7, name: '其他', icon: '📦'}
+        {id: 7, name: '其他物品', icon: '📦'}
       ],
       hasMore: true,
       page: 1,
