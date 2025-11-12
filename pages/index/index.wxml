@@ -1,62 +1,114 @@
-<!-- pages/index/index.wxml -->
+<!--pages/index/index.wxml-->
 <view class="container">
   <!-- 搜索栏 -->
-  <view class="search-bar">
-    <view class="search-box" bindtap="onSearchTap">
-      <icon type="search" size="14"></icon>
-      <text class="search-text">搜索你想要的物品...</text>
+  <view class="search-section">
+    <view class="search-bar">
+      <icon type="search" size="16" class="search-icon"></icon>
+      <input 
+        class="search-input" 
+        placeholder="搜索商品" 
+        value="{{searchValue}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+      />
+      <button class="search-btn" bindtap="onSearchConfirm">搜索</button>
     </view>
   </view>
 
-  <!-- 分类导航 -->
-  <view class="category-nav">
-    <view class="category-title">分类浏览</view>
-    <view class="category-list">
-      <block wx:for="{{categories}}" wx:key="id">
-        <view class="category-item" bindtap="onCategoryTap" data-id="{{item.id}}">
-          <view class="category-icon">{{item.icon}}</view>
-          <text class="category-name">{{item.name}}</text>
+  <!-- 主筛选 -->
+  <view class="filter-section">
+    <view class="filter-scroll">
+      <view class="filter-content">
+        <view 
+          class="filter-item {{activeFilter === 'all' ? 'active' : ''}}"
+          bindtap="onFilterChange"
+          data-filter="all"
+        >全部</view>
+        <view 
+          class="filter-item {{activeFilter === 'community' ? 'active' : ''}}"
+          bindtap="onFilterChange"
+          data-filter="community"
+        >按小区浏览</view>
+        <view 
+          class="filter-item {{activeFilter === 'category' ? 'active' : ''}}"
+          bindtap="onFilterChange"
+          data-filter="category"
+        >按分类浏览</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 小区选择 -->
+  <view class="community-picker-section" wx:if="{{activeFilter === 'community'}}">
+    <view class="form-item">
+      <text class="form-label">选择小区</text>
+      <picker 
+        range="{{communities}}" 
+        range-key="name" 
+        value="{{communityIndex}}" 
+        bindchange="onCommunityPickerChange"
+      >
+        <view class="picker {{selectedCommunity ? '' : 'placeholder'}}">
+          {{selectedCommunity ? selectedCommunity.name : '请选择小区'}}
         </view>
-      </block>
+      </picker>
+    </view>
+    
+    <view class="current-filter" wx:if="{{selectedCommunity}}">
+      <text class="filter-text">当前小区：{{selectedCommunity.name}}</text>
+      <text class="clear-filter" bindtap="clearCommunityFilter">清除</text>
+    </view>
+  </view>
+
+  <!-- 分类筛选 -->
+  <view class="category-filter-section" wx:if="{{activeFilter === 'category'}}">
+    <view class="category-scroll">
+      <view class="category-content">
+        <view 
+          class="category-item {{activeCategory === '' ? 'active' : ''}}"
+          bindtap="onCategoryFilter"
+          data-category=""
+        >全部分类</view>
+        <view 
+          wx:for="{{categories}}" 
+          wx:key="*this"
+          class="category-item {{activeCategory === item ? 'active' : ''}}"
+          bindtap="onCategoryFilter"
+          data-category="{{item}}"
+        >{{item}}</view>
+      </view>
     </view>
   </view>
 
   <!-- 商品列表 -->
-  <view class="product-section">
-    <view class="section-title">最新发布</view>
-    <view class="product-list">
-      <block wx:for="{{products}}" wx:key="_id">
-        <view class="product-item" bindtap="onProductTap" data-id="{{item._id}}">
-          <!-- 修改图片显示部分 -->
-          <view class="product-image">
-            <image 
-              wx:if="{{item.images && item.images.length > 0}}" 
-              src="{{item.images[0]}}" 
-              mode="aspectFill"
-              class="product-img"
-            ></image>
-            <view wx:else class="no-image">
-              <text class="no-image-text">暂无图片</text>
-            </view>
-          </view>
-          <view class="product-info">
-            <view class="product-title">{{item.title}}</view>
-            <view class="product-price">¥{{item.price}}</view>
-            <view class="product-meta">
-              <text class="product-location">{{item.sellerInfo.community}}</text>
-              <text class="product-time">{{formatTime(item.createTime)}}</text>
-            </view>
+  <view class="goods-list">
+    <block wx:for="{{goodsList}}" wx:key="_id">
+      <view class="goods-item" bindtap="onGoodsClick" data-id="{{item._id}}">
+        <image class="goods-image" src="{{item.images[0]}}" mode="aspectFill"></image>
+        <view class="goods-info">
+          <view class="goods-title">{{item.title}}</view>
+          <view class="goods-price">¥{{item.price}}</view>
+          <view class="goods-meta">
+            <text class="goods-category">{{item.category}}</text>
+            <text class="goods-community">{{item.community}}</text>
           </view>
         </view>
-      </block>
-    </view>
+      </view>
+    </block>
   </view>
 
-  <!-- 加载更多 -->
-  <view class="load-more" wx:if="{{hasMore}}">
-    <text>加载中...</text>
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{goodsList.length === 0 && !loading}}">
+    <text class="empty-text">
+      {{selectedCommunity ? selectedCommunity.name + '暂无在售商品' : '暂无商品'}}
+    </text>
   </view>
-  <view class="load-more" wx:else>
-    <text>没有更多了</text>
+
+  <view class="loading-section" wx:if="{{loading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <view class="no-more" wx:if="{{noMore}}">
+    <text class="no-more-text">没有更多商品了</text>
   </view>
 </view>

@@ -1,5 +1,4 @@
 <!--pages/publish/publish.wxml-->
-<!-- pages/publish/publish.wxml -->
 <view class="publish-container">
   <view class="form-section">
     
@@ -19,6 +18,41 @@
         </view>
       </view>
       <view class="tip">最多可上传9张图片</view>
+    </view>
+
+    <!-- 小区选择区域 -->
+    <view class="form-item">
+      <view class="form-label">选择小区</view>
+      <view class="community-selector">
+        <!-- 下拉选择模式 -->
+        <view wx:if="{{!showCustomInput}}">
+          <picker 
+            range="{{communities}}" 
+            range-key="name" 
+            value="{{communityIndex}}" 
+            bindchange="onCommunityChange"
+          >
+            <view class="picker {{selectedCommunity ? '' : 'placeholder'}}">
+              {{selectedCommunity ? selectedCommunity.name : '请选择小区'}}
+            </view>
+          </picker>
+          <text class="custom-trigger" bindtap="switchToCustomInput">没有我的小区？</text>
+        </view>
+        
+        <!-- 自定义输入模式 -->
+        <view wx:else class="custom-input-container">
+          <input 
+            class="form-input" 
+            placeholder="请输入小区名称" 
+            value="{{customCommunity}}"
+            bindinput="onCustomInput"
+          />
+          <view class="custom-actions">
+            <button class="btn-cancel" bindtap="cancelCustomInput">取消</button>
+            <button class="btn-confirm" bindtap="confirmCustomInput">确定</button>
+          </view>
+        </view>
+      </view>
     </view>
 
     <!-- 商品标题 -->
@@ -106,18 +140,6 @@
         bindinput="onInput"
         data-field="phone"
         maxlength="11"
-      />
-    </view>
-
-    <!-- 所在小区 -->
-    <view class="form-item">
-      <view class="form-label">所在小区</view>
-      <input 
-        class="form-input" 
-        placeholder="请输入您所在的小区" 
-        value="{{community}}"
-        bindinput="onInput"
-        data-field="community"
       />
     </view>
 

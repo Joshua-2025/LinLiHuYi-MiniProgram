@@ -10,13 +10,30 @@ Page({
       categoryIndex: -1,
       phone: '',
       community: '',
-      categories: ['家具家居', '数码电子', '服装配饰', '图书文具', '母婴用品', '运动户外', '其他']
+      categories: ['家具家居', '数码电子', '服装配饰', '图书文具', '母婴用品', '运动户外', '其他'],
+      communities: [
+        { id: 1, name: '中海塞纳时光小区' },
+        { id: 2, name: '中海康城国际' },
+        { id: 3, name: '天豪华庭' },
+        { id: 4, name: '京基御景中央' },
+        { id: 6, name: '其它小区' }
+      ],
+      communityIndex: -1,
+      selectedCommunity: null,
+      showCustomInput: false,
+      customCommunity: '',
+      searchValue: '',
+      filteredCommunities: [], // 筛选后的小区列表
+      showSearchResults: false
     },
   
-    onLoad() {
+    onLoad(options) {
       // 检查用户是否登录
       this.checkLoginStatus()
       this.getUserInfo()
+      
+      // 加载自定义小区
+      this.loadCustomCommunities()
     },
   
     // 检查登录状态
@@ -72,6 +89,123 @@ Page({
       })
     },
   
+    // 搜索小区
+    onSearchInput(e) {
+      const keyword = e.detail.value
+      this.setData({
+        searchValue: keyword
+      })
+      
+      if (keyword) {
+        const filtered = this.data.communities.filter(community => 
+          community.name.includes(keyword)
+        )
+        this.setData({
+          filteredCommunities: filtered,
+          showSearchResults: true
+        })
+      } else {
+        this.setData({
+          showSearchResults: false
+        })
+      }
+    },
+  
+    // 下拉选择变化
+    onCommunityChange(e) {
+      const index = parseInt(e.detail.value)
+      this.setData({
+        communityIndex: index,
+        selectedCommunity: this.data.communities[index]
+      })
+    },
+  
+    // 切换到自定义输入
+    switchToCustomInput() {
+      console.log('切换到自定义输入模式')
+      this.setData({
+        showCustomInput: true,
+        customCommunity: ''
+      })
+    },
+  
+    // 取消自定义输入
+    cancelCustomInput() {
+      this.setData({
+        showCustomInput: false,
+        customCommunity: ''
+      })
+    },
+  
+    // 自定义输入处理
+    onCustomInput(e) {
+      this.setData({
+        customCommunity: e.detail.value
+      })
+    },
+  
+    // 确认自定义小区
+    confirmCustomInput() {
+      const customCommunity = this.data.customCommunity.trim()
+      if (!customCommunity) {
+        wx.showToast({
+          title: '请输入小区名称',
+          icon: 'none'
+        })
+        return
+      }
+  
+      // 创建自定义小区对象
+      const customCommunityObj = {
+        id: 'custom', // 标识为自定义
+        name: customCommunity
+      }
+  
+      this.setData({
+        selectedCommunity: customCommunityObj,
+        showCustomInput: false,
+        customCommunity: ''
+      })
+  
+      wx.showToast({
+        title: '已选择自定义小区',
+        icon: 'success'
+      })
+    },
+  
+    // 保存自定义小区到本地缓存
+    saveCustomCommunity(communityName) {
+      try {
+        const customCommunities = wx.getStorageSync('customCommunities') || []
+        if (!customCommunities.includes(communityName)) {
+          customCommunities.push(communityName)
+          wx.setStorageSync('customCommunities', customCommunities)
+        }
+      } catch (error) {
+        console.log('保存自定义小区失败:', error)
+      }
+    },
+  
+    // 页面加载时读取自定义小区
+    loadCustomCommunities() {
+      try {
+        const customCommunities = wx.getStorageSync('customCommunities') || []
+        if (customCommunities.length > 0) {
+          // 可以将自定义小区也显示在下拉选项中
+          const customOptions = customCommunities.map(name => ({
+            id: 'custom_' + name,
+            name: name + ' (自定义)'
+          }))
+          
+          this.setData({
+            communities: [...this.data.communities, ...customOptions]
+          })
+        }
+      } catch (error) {
+        console.log('读取自定义小区失败:', error)
+      }
+    },
+  
     async chooseImage() {
       // 检查登录状态
       if (!this.checkLoginStatus()) return
@@ -124,7 +258,7 @@ Page({
     },
   
     validateForm() {
-      const { images, title, description, price, category, phone, community } = this.data
+      const { images, title, description, price, category, phone, selectedCommunity } = this.data
   
       // 检查登录状态
       if (!this.checkLoginStatus()) {
@@ -161,8 +295,9 @@ Page({
         return false
       }
   
-      if (!community.trim()) {
-        wx.showToast({ title: '请输入所在小区', icon: 'none' })
+      // 使用 selectedCommunity 而不是 community
+      if (!selectedCommunity) {
+        wx.showToast({ title: '请选择小区', icon: 'none' })
         return false
       }
   
@@ -196,7 +331,7 @@ Page({
           return
         }
   
-        // 保存商品数据
+        // 使用新的数据结构，包含小区信息
         await db.collection('products').add({
           data: {
             title: this.data.title.trim(),
@@ -205,18 +340,28 @@ Page({
             originalPrice: this.data.originalPrice ? parseFloat(this.data.originalPrice) : null,
             category: this.data.category,
             images: this.data.images,
+            // 新增小区字段
+            community: this.data.selectedCommunity.name,
+            communityId: this.data.selectedCommunity.id === 'custom' ? 'custom' : this.data.selectedCommunity.id,
+            isCustomCommunity: this.data.selectedCommunity.id === 'custom',
+            
             status: 1, // 上架状态
             sellerInfo: {
               nickName: userInfo.nickName,
               avatarUrl: userInfo.avatarUrl || '',
               phone: this.data.phone,
-              community: this.data.community.trim()
+              community: this.data.selectedCommunity.name // 使用选择的小区
             },
             viewCount: 0,
             createTime: db.serverDate(),
             updateTime: db.serverDate()
           }
         })
+  
+        // 保存自定义小区到本地
+        if (this.data.selectedCommunity.id === 'custom') {
+          this.saveCustomCommunity(this.data.selectedCommunity.name)
+        }
   
         wx.hideLoading()
         wx.showToast({

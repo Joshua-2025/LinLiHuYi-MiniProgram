@@ -146,3 +146,77 @@
   .publish-btn:disabled {
     background: #ccc;
   }
+  
+  /* 小区选择器样式 */
+  .community-selector {
+    margin-bottom: 10rpx;
+  }
+  
+  .community-selector .picker {
+    padding: 20rpx;
+    border: 1rpx solid #e0e0e0;
+    border-radius: 12rpx;
+    margin-bottom: 15rpx;
+    background: #fafafa;
+    font-size: 32rpx;
+  }
+  
+  .community-selector .picker.placeholder {
+    color: #999;
+  }
+  
+  .custom-trigger {
+    color: #007AFF;
+    font-size: 28rpx;
+    text-decoration: underline;
+    padding: 10rpx 0;
+    display: inline-block;
+  }
+  
+  .custom-input-container {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .custom-input-container .form-input {
+    border: 1rpx solid #e0e0e0;
+    border-radius: 12rpx;
+    padding: 20rpx;
+    background: #fafafa;
+    margin-bottom: 20rpx;
+  }
+  
+  .custom-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 20rpx;
+  }
+  
+  .btn-cancel, .btn-confirm {
+    flex: 1;
+    padding: 24rpx;
+    border-radius: 12rpx;
+    font-size: 28rpx;
+    border: none;
+    height: auto;
+    line-height: normal;
+  }
+  
+  .btn-cancel {
+    background: #f8f8f8;
+    color: #333;
+    border: 1rpx solid #e0e0e0;
+  }
+  
+  .btn-confirm {
+    background: #07c160;
+    color: white;
+  }
+  
+  .btn-cancel:active {
+    background: #e8e8e8;
+  }
+  
+  .btn-confirm:active {
+    background: #06a652;
+  }
