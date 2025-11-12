@@ -9,17 +9,17 @@ Page({
         {id: 4, name: '图书文具', icon: '📚'},
         {id: 5, name: '母婴用品', icon: '👶'},
         {id: 6, name: '运动户外', icon: '⚽'},
-        {id: 7, name: '其他物品', icon: '📦'}
+        {id: 7, name: '文艺创作', icon: '🎨'},
+        {id: 8, name: '其它物品', icon: '📦'}
       ],
       hasMore: true,
       page: 1,
       pageSize: 10,
       
-      // === 新增：小区筛选相关 ===
-      communityList: ['全部小区', '中海塞纳', '中海康城', '天昊华庭', '京基御景'],
+      // === 小区筛选相关 ===
+      communityList: ['全部小区', '中海塞纳', '中海康城', '天昊华庭', '京基御景', '其它'],
       selectedCommunityIndex: 0,
       selectedCommunity: ''
-      // ========================
     },
   
     onLoad() {
@@ -32,7 +32,7 @@ Page({
       this.setData({
         page: 1,
         products: [],
-        selectedCommunityIndex: 0,  // 重置小区筛选
+        selectedCommunityIndex: 0,
         selectedCommunity: ''
       })
       this.loadProducts().then(() => {
@@ -47,7 +47,7 @@ Page({
       }
     },
   
-    // === 新增：小区选择变化 ===
+    // 小区选择变化
     onCommunityChange(e) {
       const index = parseInt(e.detail.value)
       const selectedCommunity = index === 0 ? '' : this.data.communityList[index]
@@ -75,9 +75,8 @@ Page({
       })
       this.loadProducts()
     },
-    // ========================
   
-    // 加载商品列表
+    // 加载商品列表 - 修复"其它"小区筛选
     async loadProducts() {
       wx.showLoading({
         title: '加载中...',
@@ -86,48 +85,65 @@ Page({
       try {
         const db = wx.cloud.database()
         
-        // === 修改：构建查询条件 ===
+        // 先查询所有商品用于调试
+        const allProducts = await db.collection('products')
+          .where({ status: 1 })
+          .get()
+        
+        console.log('=== 所有商品的小区信息 ===')
+        allProducts.data.forEach((product, index) => {
+          console.log(`商品${index + 1}:`, {
+            title: product.title,
+            community: product.sellerInfo?.community,
+            isPreset: ['中海塞纳', '中海康城', '天昊华庭', '京基御景'].includes(product.sellerInfo?.community)
+          })
+        })
+        
+        // 构建查询条件
         let query = {
           status: 1
         }
         
-        // 添加小区筛选条件
+        // === 修复：正确的"其它"小区筛选逻辑 ===
         if (this.data.selectedCommunity) {
-          query['sellerInfo.community'] = this.data.selectedCommunity
+          if (this.data.selectedCommunity === '其它') {
+            // 选择"其它"时，查询不在预设小区列表中的商品
+            const presetCommunities = ['中海塞纳', '中海康城', '天昊华庭', '京基御景']
+            
+            // 方法1：使用多个不等于条件
+            query['sellerInfo.community'] = db.command.and([
+              db.command.neq('中海塞纳'),
+              db.command.neq('中海康城'),
+              db.command.neq('天昊华庭'),
+              db.command.neq('京基御景')
+            ])
+            
+            console.log('其它小区查询条件:', query)
+          } else {
+            // 选择具体小区时，精确匹配
+            query['sellerInfo.community'] = this.data.selectedCommunity
+          }
         }
-        // ========================
         
         const result = await db.collection('products')
-          .where(query)  // 使用动态查询条件
+          .where(query)
           .orderBy('createTime', 'desc')
           .skip((this.data.page - 1) * this.data.pageSize)
           .limit(this.data.pageSize)
           .get()
         
-        console.log('加载的商品数据:', result.data)
-        console.log('当前筛选条件:', {
-          community: this.data.selectedCommunity,
-          page: this.data.page
+        console.log('筛选结果:', {
+          筛选条件: this.data.selectedCommunity,
+          查询条件: query,
+          返回数量: result.data.length,
+          商品列表: result.data.map(p => p.title)
         })
         
-        // 检查每个商品的图片数据
-        if (result.data && result.data.length > 0) {
-          result.data.forEach((product, index) => {
-            console.log(`商品 ${index + 1}:`, {
-              title: product.title,
-              community: product.sellerInfo?.community,
-              images: product.images,
-              imagesLength: product.images ? product.images.length : 0,
-              hasFirstImage: product.images && product.images.length > 0
-            })
-          })
-        }
-        
         const newProducts = result.data
-        const allProducts = this.data.page === 1 ? newProducts : [...this.data.products, ...newProducts]
+        const allProductsList = this.data.page === 1 ? newProducts : [...this.data.products, ...newProducts]
         
         this.setData({
-          products: allProducts,
+          products: allProductsList,
           hasMore: newProducts.length === this.data.pageSize
         })
   
@@ -138,12 +154,73 @@ Page({
         }
       } catch (error) {
         console.error('加载商品失败:', error)
+        // 如果上面的查询失败，使用备选方案
+        await this.loadProductsAlternative()
+      } finally {
+        wx.hideLoading()
+      }
+    },
+  
+    // 备选加载方案 - 本地筛选（确保能工作）
+    async loadProductsAlternative() {
+      try {
+        const db = wx.cloud.database()
+        
+        // 先查询所有上架商品
+        const result = await db.collection('products')
+          .where({ status: 1 })
+          .orderBy('createTime', 'desc')
+          .get()
+        
+        let filteredProducts = result.data
+        
+        // 在本地进行小区筛选
+        if (this.data.selectedCommunity) {
+          if (this.data.selectedCommunity === '其它') {
+            // 选择"其它"时，显示不在预设小区列表中的商品
+            const presetCommunities = ['中海塞纳', '中海康城', '天昊华庭', '京基御景']
+            filteredProducts = filteredProducts.filter(product => {
+              const productCommunity = product.sellerInfo?.community
+              return productCommunity && !presetCommunities.includes(productCommunity)
+            })
+          } else {
+            // 选择具体小区时，精确匹配
+            filteredProducts = filteredProducts.filter(product => 
+              product.sellerInfo?.community === this.data.selectedCommunity
+            )
+          }
+        }
+        
+        // 分页处理
+        const startIndex = (this.data.page - 1) * this.data.pageSize
+        const paginatedProducts = filteredProducts.slice(startIndex, startIndex + this.data.pageSize)
+        
+        console.log('备选方案 - 筛选结果:', {
+          筛选条件: this.data.selectedCommunity,
+          总数: filteredProducts.length,
+          当前页: paginatedProducts.length,
+          商品: paginatedProducts.map(p => p.title)
+        })
+        
+        const newProducts = paginatedProducts
+        const allProducts = this.data.page === 1 ? newProducts : [...this.data.products, ...newProducts]
+        
+        this.setData({
+          products: allProducts,
+          hasMore: (startIndex + this.data.pageSize) < filteredProducts.length
+        })
+  
+        if (newProducts.length > 0) {
+          this.setData({
+            page: this.data.page + 1
+          })
+        }
+      } catch (error) {
+        console.error('备选方案加载失败:', error)
         wx.showToast({
           title: '加载失败',
           icon: 'none'
         })
-      } finally {
-        wx.hideLoading()
       }
     },
   

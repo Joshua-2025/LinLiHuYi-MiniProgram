@@ -10,10 +10,10 @@ Page({
       categoryIndex: -1,
       phone: '',
       community: '',
-      categories: ['家具家居', '数码电子', '服装配饰', '图书文具', '母婴用品', '运动户外', '其他'],
+      categories: ['家具家居', '数码电子', '服装配饰', '图书文具', '母婴用品', '运动户外', '文艺创作','其它'],
       
       // 小区选择相关
-      communityList: ['中海塞纳', '中海康城', '天昊华庭', '京基御景', '其他'],
+      communityList: ['中海塞纳', '中海康城', '天昊华庭', '京基御景', '其它'],
       communityIndex: -1,
       showCustomInput: false,
       customCommunity: ''
@@ -85,10 +85,10 @@ Page({
       
       this.setData({
         communityIndex: index,
-        showCustomInput: selectedCommunity === '其他'
+        showCustomInput: selectedCommunity === '其它'
       })
       
-      if (selectedCommunity !== '其他') {
+      if (selectedCommunity !== '其它') {
         this.setData({
           community: selectedCommunity,
           customCommunity: ''
