@@ -10,7 +10,13 @@ Page({
       categoryIndex: -1,
       phone: '',
       community: '',
-      categories: ['家具家居', '数码电子', '服装配饰', '图书文具', '母婴用品', '运动户外', '其他']
+      categories: ['家具家居', '数码电子', '服装配饰', '图书文具', '母婴用品', '运动户外', '其他'],
+      
+      // 小区选择相关
+      communityList: ['中海塞纳', '中海康城', '天昊华庭', '京基御景', '其他'],
+      communityIndex: -1,
+      showCustomInput: false,
+      customCommunity: ''
     },
   
     onLoad() {
@@ -72,6 +78,35 @@ Page({
       })
     },
   
+    // 小区选择方法
+    onCommunityChange(e) {
+      const index = parseInt(e.detail.value)
+      const selectedCommunity = this.data.communityList[index]
+      
+      this.setData({
+        communityIndex: index,
+        showCustomInput: selectedCommunity === '其他'
+      })
+      
+      if (selectedCommunity !== '其他') {
+        this.setData({
+          community: selectedCommunity,
+          customCommunity: ''
+        })
+      } else {
+        this.setData({
+          community: ''
+        })
+      }
+    },
+    
+    onCustomCommunityInput(e) {
+      this.setData({
+        customCommunity: e.detail.value,
+        community: e.detail.value
+      })
+    },
+
     async chooseImage() {
       // 检查登录状态
       if (!this.checkLoginStatus()) return
@@ -89,21 +124,28 @@ Page({
           title: '上传中...',
         })
   
-        const uploadTasks = res.tempFiles.map(file => {
-          return wx.cloud.uploadFile({
-            cloudPath: `products/${Date.now()}-${Math.random().toString(36).substr(2)}.jpg`,
-            filePath: file.tempFilePath
-          })
+        // 修复：使用正确的云开发上传方式
+        const uploadTasks = res.tempFiles.map(async (file) => {
+          try {
+            const uploadResult = await wx.cloud.uploadFile({
+              cloudPath: `products/${Date.now()}-${Math.random().toString(36).substr(2, 8)}.jpg`,
+              filePath: file.tempFilePath
+            })
+            return uploadResult.fileID
+          } catch (uploadError) {
+            console.error('单张图片上传失败:', uploadError)
+            throw uploadError
+          }
         })
   
-        const results = await Promise.all(uploadTasks)
-        const fileIDs = results.map(res => res.fileID)
+        const fileIDs = await Promise.all(uploadTasks)
         
         this.setData({
           images: [...this.data.images, ...fileIDs]
         })
   
         wx.hideLoading()
+        
       } catch (error) {
         console.error('选择图片失败:', error)
         wx.hideLoading()
@@ -161,8 +203,9 @@ Page({
         return false
       }
   
+      // 修改：小区验证逻辑
       if (!community.trim()) {
-        wx.showToast({ title: '请输入所在小区', icon: 'none' })
+        wx.showToast({ title: '请选择或输入小区', icon: 'none' })
         return false
       }
   

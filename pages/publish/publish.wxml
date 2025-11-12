@@ -109,17 +109,32 @@
       />
     </view>
 
-    <!-- 所在小区 -->
+    <!-- === 修改：所在小区 - 改为选择器 === -->
     <view class="form-item">
       <view class="form-label">所在小区</view>
+      <picker 
+        range="{{communityList}}" 
+        value="{{communityIndex}}" 
+        bindchange="onCommunityChange"
+      >
+        <view class="picker {{community && communityIndex !== -1 ? '' : 'placeholder'}}">
+          {{community && communityIndex !== -1 ? communityList[communityIndex] : '请选择小区'}}
+        </view>
+      </picker>
+    </view>
+
+    <!-- 自定义小区输入 - 当选择"其他"时显示 -->
+    <view class="form-item" wx:if="{{showCustomInput}}">
+      <view class="form-label">自定义小区</view>
       <input 
         class="form-input" 
-        placeholder="请输入您所在的小区" 
-        value="{{community}}"
-        bindinput="onInput"
-        data-field="community"
+        placeholder="请输入您的小区名称" 
+        value="{{customCommunity}}"
+        bindinput="onCustomCommunityInput"
+        data-field="customCommunity"
       />
     </view>
+    <!-- ================================= -->
 
   </view>
 
