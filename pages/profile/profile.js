@@ -4,88 +4,228 @@ Page({
       userInfo: {},
       myProductsCount: 0,
       myFavoritesCount: 0,
-      soldCount: 0
+      soldCount: 0,
+      isLoggedIn: false
     },
   
     onLoad() {
       console.log('个人中心页面加载')
-      this.getUserInfo()
+      this.checkLoginStatus()
     },
   
     onShow() {
       console.log('个人中心页面显示')
-      this.getUserInfo()
-      setTimeout(() => {
-        this.loadUserStats()
-      }, 500)
+      this.checkLoginStatus()
+      this.loadUserStats()
     },
   
-    // 获取用户信息 - 从数据库读取
-    async getUserInfo() {
+    // 检查登录状态
+    async checkLoginStatus() {
       const app = getApp()
       
+      // 先检查本地是否有用户信息
       try {
-        const db = wx.cloud.database()
-        
-        // 从数据库查询用户信息
-        const userRes = await db.collection('users')
-          .where({
-            _openid: 'user_1762788028810_s8qfk5t22' // 使用你的管理员openid
-          })
-          .get()
-        
-        console.log('数据库查询结果:', userRes)
-        
-        if (userRes.data.length > 0) {
-          const dbUserInfo = userRes.data[0]
-          console.log('从数据库获取用户信息:', dbUserInfo)
-          console.log('管理员状态 - isAdmin:', dbUserInfo.isAdmin, 'adminLevel:', dbUserInfo.adminLevel)
-          
+        const cachedUserInfo = wx.getStorageSync('userInfo')
+        if (cachedUserInfo && cachedUserInfo.nickName) {
+          console.log('从缓存获取用户信息:', cachedUserInfo)
           this.setData({
-            userInfo: dbUserInfo
+            userInfo: cachedUserInfo,
+            isLoggedIn: true
           })
-          
-          // 更新全局和缓存
-          app.globalData.userInfo = dbUserInfo
-          wx.setStorageSync('userInfo', dbUserInfo)
-          
-          this.loadUserStats()
-        } else {
-          console.log('数据库中未找到用户信息')
-          // 使用本地缓存
-          this.getUserInfoFromCache()
+          app.globalData.userInfo = cachedUserInfo
+          return
         }
       } catch (error) {
-        console.error('从数据库获取用户信息失败:', error)
-        // 出错时使用本地缓存
-        this.getUserInfoFromCache()
+        console.error('读取缓存失败:', error)
       }
+      
+      // 如果没有缓存，显示登录界面
+      this.setData({
+        userInfo: {},
+        isLoggedIn: false
+      })
     },
   
-    // 从缓存获取用户信息（备用）
-    getUserInfoFromCache() {
+// 微信一键登录（简化版）
+wechatLogin() {
+    // 先获取用户信息（用户主动点击）
+    wx.getUserProfile({
+      desc: '用于完善会员资料',
+      success: async (res) => {
+        console.log('获取用户信息成功:', res.userInfo)
+        
+        let userInfo = res.userInfo;
+        
+        // 如果昵称是"微信用户"，提示用户设置昵称
+        if (userInfo.nickName === '微信用户' || !userInfo.nickName) {
+          userInfo = await this.setCustomNickName(userInfo);
+          if (!userInfo) return; // 用户取消设置
+        }
+        
+        try {
+          wx.showLoading({
+            title: '登录中...',
+          })
+  
+          // 微信登录获取 code
+          const loginRes = await wx.login()
+          console.log('微信登录code:', loginRes.code)
+          
+          if (!loginRes.code) {
+            throw new Error('获取登录code失败')
+          }
+  
+          // 调用云函数
+          const cloudRes = await wx.cloud.callFunction({
+            name: 'login',
+            data: {
+              code: loginRes.code,
+              userInfo: userInfo
+            }
+          })
+          
+          console.log('云函数返回:', cloudRes)
+  
+          if (cloudRes.result && cloudRes.result.success) {
+            const finalUserInfo = cloudRes.result.userInfo
+            this.handleLoginSuccess(finalUserInfo)
+          } else {
+            throw new Error('登录失败')
+          }
+  
+        } catch (error) {
+          console.error('微信登录失败:', error)
+          wx.showToast({
+            title: '登录失败，请重试',
+            icon: 'none'
+          })
+        } finally {
+          wx.hideLoading()
+        }
+      },
+      fail: (error) => {
+        console.error('获取用户信息失败:', error)
+        wx.showToast({
+          title: '授权失败',
+          icon: 'none'
+        })
+      }
+    })
+  },
+// 设置自定义昵称
+setCustomNickName(baseUserInfo) {
+    return new Promise((resolve) => {
+      wx.showModal({
+        title: '设置昵称',
+        content: '请为您设置一个昵称',
+        editable: true,
+        placeholderText: '例如：邻居小明',
+        confirmText: '确定',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm && res.content) {
+            const nickName = res.content.trim()
+            if (nickName) {
+              // 使用用户输入的昵称
+              baseUserInfo.nickName = nickName;
+              resolve(baseUserInfo)
+            } else {
+              wx.showToast({
+                title: '昵称不能为空',
+                icon: 'none'
+              })
+              resolve(null)
+            }
+          } else {
+            // 用户取消设置，仍然使用微信返回的信息
+            resolve(baseUserInfo)
+          }
+        }
+      })
+    })
+  },
+// 新的方法：通过按钮获取用户信息
+getUserProfileWithButton() {
+    return new Promise((resolve, reject) => {
+      // 先隐藏loading，因为下面要显示授权按钮
+      wx.hideLoading()
+      
+      wx.showModal({
+        title: '授权用户信息',
+        content: '需要获取您的昵称和头像来完善资料',
+        confirmText: '授权',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            // 用户点击授权后，再调用getUserProfile
+            wx.getUserProfile({
+              desc: '用于完善会员资料',
+              success: (res) => {
+                console.log('获取用户信息成功:', res.userInfo)
+                resolve(res.userInfo)
+                // 重新显示loading
+                wx.showLoading({
+                  title: '登录中...',
+                })
+              },
+              fail: (error) => {
+                console.error('获取用户信息失败:', error)
+                reject(error)
+              }
+            })
+          } else {
+            reject(new Error('用户取消授权'))
+          }
+        }
+      })
+    })
+  },
+  
+    // 获取用户信息（适配新版微信API）
+    getUserProfile() {
+      return new Promise((resolve, reject) => {
+        wx.getUserProfile({
+          desc: '用于完善会员资料',
+          success: (res) => {
+            console.log('获取用户信息成功:', res.userInfo)
+            resolve(res.userInfo)
+          },
+          fail: (error) => {
+            console.error('获取用户信息失败:', error)
+            reject(error)
+          }
+        })
+      })
+    },
+  
+    // 处理登录成功
+    handleLoginSuccess(userInfo) {
       const app = getApp()
       
-      if (app.globalData.userInfo && app.globalData.userInfo._openid) {
-        console.log('从全局获取用户信息:', app.globalData.userInfo)
-        this.setData({
-          userInfo: app.globalData.userInfo
-        })
-        this.loadUserStats()
-      } else {
-        try {
-          const userInfo = wx.getStorageSync('userInfo')
-          if (userInfo) {
-            console.log('从缓存获取用户信息:', userInfo)
-            this.setData({ userInfo })
-            app.globalData.userInfo = userInfo
-            this.loadUserStats()
-          } else {
-            console.log('没有找到任何用户信息')
-          }
-        } catch (error) {
-          console.error('获取用户信息失败:', error)
-        }
+      console.log('登录成功，用户信息:', userInfo)
+      
+      this.setData({
+        userInfo: userInfo,
+        isLoggedIn: true
+      })
+      
+      // 保存到全局和缓存
+      app.globalData.userInfo = userInfo
+      wx.setStorageSync('userInfo', userInfo)
+      
+      // 更新统计信息
+      this.loadUserStats()
+      
+      wx.showToast({
+        title: '登录成功',
+        icon: 'success'
+      })
+  
+      // 登录后提示设置小区（如果还没有设置）
+      if (!userInfo.community) {
+        setTimeout(() => {
+          this.showSetCommunityDialog()
+        }, 1000)
       }
     },
   
@@ -116,120 +256,30 @@ Page({
     createUserWithCustomNickName(nickName) {
       const userInfo = {
         nickName: nickName,
-        avatarUrl: '',
-        _openid: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        avatarUrl: '/images/default-avatar.png',
+        _openid: 'custom_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
         community: '',
         isCustom: true,
         isAdmin: false,
         adminLevel: 0
       }
       
-      console.log('创建自定义用户:', userInfo)
-      
-      this.setData({ userInfo })
-      
-      // 保存到全局和缓存
-      const app = getApp()
-      app.globalData.userInfo = userInfo
-      wx.setStorageSync('userInfo', userInfo)
-      
-      // 更新用户统计
-      this.loadUserStats()
-      
-      wx.showToast({
-        title: '登录成功',
-        icon: 'success'
-      })
-  
-      // 登录后提示设置小区
-      setTimeout(() => {
-        this.showSetCommunityDialog()
-      }, 1000)
-    },
-  
-    // 微信授权登录
-    wechatLogin() {
-      wx.getUserProfile({
-        desc: '用于完善会员资料',
-        success: async (res) => {
-          const userInfo = res.userInfo
-          userInfo._openid = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
-          userInfo.community = userInfo.community || ''
-          userInfo.isCustom = false
-          userInfo.isAdmin = false
-          userInfo.adminLevel = 0
-          
-          console.log('微信登录成功:', userInfo)
-          
-          try {
-            const db = wx.cloud.database()
-            const app = getApp()
-            
-            // 检查是否是管理员用户
-            const adminRes = await db.collection('users')
-              .where({
-                _openid: 'user_1762788028810_s8qfk5t22'
-              })
-              .get()
-            
-            if (adminRes.data.length > 0 && adminRes.data[0].isAdmin) {
-              // 如果是管理员，使用管理员信息
-              const adminUserInfo = adminRes.data[0]
-              console.log('使用管理员账号:', adminUserInfo)
-              this.setData({ userInfo: adminUserInfo })
-              app.globalData.userInfo = adminUserInfo
-              wx.setStorageSync('userInfo', adminUserInfo)
-            } else {
-              // 普通用户
-              this.setData({ userInfo })
-              app.globalData.userInfo = userInfo
-              wx.setStorageSync('userInfo', userInfo)
-            }
-            
-            this.loadUserStats()
-            
-            wx.showToast({
-              title: '登录成功',
-              icon: 'success'
-            })
-  
-            setTimeout(() => {
-              this.showSetCommunityDialog()
-            }, 1000)
-            
-          } catch (error) {
-            console.error('登录处理失败:', error)
-            wx.showToast({
-              title: '登录失败',
-              icon: 'none'
-            })
-          }
-        },
-        fail: (error) => {
-          console.error('微信登录失败:', error)
-          wx.showToast({
-            title: '登录失败',
-            icon: 'none'
-          })
-        }
-      })
+      this.handleLoginSuccess(userInfo)
     },
   
     // 显示登录选择
-    getUserProfile() {
+    showLoginOptions() {
       wx.showActionSheet({
         itemList: ['微信一键登录', '自定义昵称登录'],
         success: (res) => {
           const tapIndex = res.tapIndex
           if (tapIndex === 0) {
-            // 微信登录
             this.wechatLogin()
           } else if (tapIndex === 1) {
-            // 自定义昵称登录
             this.customLogin()
           }
         },
-        fail: (error) =>{
+        fail: (error) => {
           console.error('选择登录方式失败:', error)
         }
       })
@@ -243,7 +293,11 @@ Page({
         success: (res) => {
           if (res.confirm) {
             this.setData({
-              userInfo: {}
+              userInfo: {},
+              isLoggedIn: false,
+              myProductsCount: 0,
+              myFavoritesCount: 0,
+              soldCount: 0
             })
             
             const app = getApp()
@@ -254,10 +308,6 @@ Page({
               title: '已退出登录',
               icon: 'success'
             })
-            
-            setTimeout(() => {
-              this.getUserInfo()
-            }, 500)
           }
         }
       })
@@ -265,7 +315,7 @@ Page({
   
     // 设置小区
     onSetCommunity() {
-      if (!this.data.userInfo.nickName) {
+      if (!this.data.isLoggedIn) {
         wx.showToast({
           title: '请先登录',
           icon: 'none'
@@ -317,22 +367,13 @@ Page({
   
     // 加载用户统计数据
     async loadUserStats() {
-      if (!this.data.userInfo.nickName) {
+      if (!this.data.isLoggedIn) {
         console.log('用户未登录，跳过统计加载')
         return
       }
   
       try {
         const db = wx.cloud.database()
-        const app = getApp()
-        
-        let userId = app.globalData.userInfo._openid
-        if (!userId) {
-          const cachedUser = wx.getStorageSync('userInfo')
-          userId = cachedUser ? cachedUser._openid : 'temp_user_' + this.data.userInfo.nickName
-        }
-        
-        console.log('当前用户ID:', userId)
         
         // 获取我发布的商品数量
         const productsRes = await db.collection('products')
@@ -341,16 +382,12 @@ Page({
           })
           .count()
         
-        console.log('发布的商品数量:', productsRes.total)
-        
         // 获取收藏数量
         const favoritesRes = await db.collection('favorites')
           .where({
-            userId: userId
+            userId: this.data.userInfo._openid
           })
           .count()
-  
-        console.log('收藏数量:', favoritesRes.total)
   
         // 获取已售出数量
         const soldRes = await db.collection('products')
@@ -360,8 +397,6 @@ Page({
           })
           .count()
   
-        console.log('已售出数量:', soldRes.total)
-  
         this.setData({
           myProductsCount: productsRes.total,
           myFavoritesCount: favoritesRes.total,
@@ -370,17 +405,12 @@ Page({
   
       } catch (error) {
         console.error('加载用户统计失败:', error)
-        this.setData({
-          myProductsCount: 0,
-          myFavoritesCount: 0,
-          soldCount: 0
-        })
       }
     },
   
     // 跳转到我的发布
     navigateToMyProducts() {
-      if (!this.data.userInfo.nickName) {
+      if (!this.data.isLoggedIn) {
         wx.showToast({
           title: '请先登录',
           icon: 'none'
@@ -394,7 +424,7 @@ Page({
   
     // 跳转到我的收藏
     navigateToMyFavorites() {
-      if (!this.data.userInfo.nickName) {
+      if (!this.data.isLoggedIn) {
         wx.showToast({
           title: '请先登录',
           icon: 'none'
@@ -408,7 +438,7 @@ Page({
   
     // 跳转到消息页面
     navigateToMessages() {
-      if (!this.data.userInfo.nickName) {
+      if (!this.data.isLoggedIn) {
         wx.showToast({
           title: '请先登录',
           icon: 'none'
@@ -437,7 +467,7 @@ Page({
   
     // 修改个人信息
     updateUserInfo() {
-      if (!this.data.userInfo.nickName) {
+      if (!this.data.isLoggedIn) {
         wx.showToast({
           title: '请先登录',
           icon: 'none'

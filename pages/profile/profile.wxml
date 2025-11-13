@@ -14,8 +14,8 @@
         <text class="edit-icon">✏️</text>
       </view>
     </view>
-    <button class="login-btn" wx:if="{{!userInfo.nickName}}" bindtap="getUserProfile">点击登录</button>
-    <button class="logout-btn" wx:else bindtap="onLogout">退出登录</button>
+    <button class="login-btn" wx:if="{{!isLoggedIn}}" bindtap="showLoginOptions">点击登录</button>
+     <button class="logout-btn" wx:else bindtap="onLogout">退出登录</button>
   </view>
 
   <!-- 数据统计 -->

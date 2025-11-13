@@ -6,7 +6,7 @@
   
   /* 搜索栏样式 - 优化 */
   .search-bar {
-    padding: 20rpx 30rpx;
+    padding: 20rpx 206rpx;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
   
