@@ -457,39 +457,61 @@ Page({
       })
     },
   
-    // 删除商品
-    async deleteProduct(e) {
-      const product = e.currentTarget.dataset.product
-      console.log('删除商品:', product)
+// 删除商品 - 使用云函数绕过权限限制
+async deleteProduct(e) {
+    const product = e.currentTarget.dataset.product
+    console.log('删除商品:', product)
   
-      wx.showModal({
-        title: '确认删除',
-        content: `确定要删除商品"${product.title}"吗？此操作不可恢复！`,
-        confirmColor: '#ff3b30',
-        success: async (res) => {
-          if (res.confirm) {
-            try {
-              const db = wx.cloud.database()
-              await db.collection('products').doc(product._id).remove()
+    wx.showModal({
+      title: '确认删除',
+      content: `确定要删除商品"${product.title}"吗？此操作不可恢复！`,
+      confirmColor: '#ff3b30',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            wx.showLoading({
+              title: '删除中...',
+            })
   
+            // 调用管理员删除云函数
+            const result = await wx.cloud.callFunction({
+              name: 'adminDeleteProduct',
+              data: {
+                productId: product._id
+              }
+            })
+  
+            console.log('云函数返回:', result)
+  
+            if (result.result.success) {
               wx.showToast({
                 title: '删除成功',
-                icon: 'success'
+                icon: 'success',
+                duration: 2000
               })
-  
-              this.loadProducts()
-            } catch (error) {
-              console.error('删除商品失败:', error)
-              wx.showToast({
-                title: '删除失败',
-                icon: 'none'
-              })
+              
+              // 延迟刷新列表，让用户看到成功提示
+              setTimeout(() => {
+                this.loadProducts()
+              }, 1500)
+            } else {
+              throw new Error(result.result.error || '删除失败')
             }
+  
+          } catch (error) {
+            console.error('删除商品失败:', error)
+            wx.showToast({
+              title: error.message || '删除失败',
+              icon: 'none',
+              duration: 3000
+            })
+          } finally {
+            wx.hideLoading()
           }
         }
-      })
-    },
-  
+      }
+    })
+  },
     // 获取状态文本
     getStatusText(status) {
       const statusMap = {
