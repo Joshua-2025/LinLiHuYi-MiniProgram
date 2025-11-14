@@ -36,7 +36,7 @@
           <view class="user-info">
             <view class="user-name-section">
               <text class="user-name">{{item.nickName || '未设置昵称'}}</text>
-              <text class="user-id">ID:{{item._openid ? item._openid.substring(0, 6) + '...' : '未知'}}</text>
+              <text class="user-id full-id">{{item._id}}</text>
             </view>
             <view class="user-contact-section">
               <view class="contact-item">

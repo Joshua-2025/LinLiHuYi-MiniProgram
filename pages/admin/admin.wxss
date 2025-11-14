@@ -517,3 +517,11 @@
     font-size: 26rpx;
     color: #999;
   }
+/*控制管理后台用户ID显示格式*/
+  .full-id {
+    font-size: 12px;
+    opacity: 0.7;
+    word-break: break-all;
+    max-width: 120px;
+    display: block;
+  }

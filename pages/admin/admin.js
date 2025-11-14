@@ -103,62 +103,78 @@ Page({
       }
     },
   
-    // 加载用户数据 - 修复数据完整性问题
-    async loadUsers() {
-      try {
-        const db = wx.cloud.database()
-        const res = await db.collection('users')
-          .orderBy('createTime', 'desc')
-          .get()
+// 加载用户数据 - 修复数据完整性问题
+async loadUsers() {
+    try {
+      const db = wx.cloud.database()
+      const res = await db.collection('users')
+        .orderBy('createTime', 'desc')
+        .get()
   
-        console.log('加载用户数据:', res.data)
-        
-        // 处理用户数据，确保所有字段都有值
-        const processedUsers = await Promise.all(
-          res.data.map(async (user) => {
-            // 获取用户商品数量
-            let productCount = 0
-            try {
-              const productRes = await db.collection('products')
-                .where({
-                  'sellerInfo.nickName': user.nickName || '未知用户'
-                })
-                .count()
-              productCount = productRes.total
-            } catch (error) {
-              console.error('获取用户商品数量失败:', error)
-            }
+      console.log('原始用户数据:', res.data)
+      
+      // 处理用户数据，确保所有字段都有值
+      const processedUsers = await Promise.all(
+        res.data.map(async (user) => {
+          console.log('处理单个用户:', user)
+          
+          // 获取用户商品数量 - 使用 _openid 作为查询条件
+          let productCount = 0
+          try {
+            const productRes = await db.collection('products')
+              .where({
+                '_openid': user._openid
+              })
+              .count()
+            productCount = productRes.total
+          } catch (error) {
+            console.error('获取用户商品数量失败:', error)
+          }
   
-            // 返回处理后的用户数据，确保所有字段都有默认值
-            return {
-              _id: user._id || '',
-              _openid: user._openid || '未设置',
-              nickName: user.nickName || '未设置昵称',
-              avatarUrl: user.avatarUrl || '/images/default-avatar.png',
-              phone: user.phone || '未绑定手机',
-              community: user.community || '未设置小区',
-              isAdmin: user.isAdmin || false,
-              adminLevel: user.adminLevel || 0,
-              createTime: user.createTime || Date.now(),
-              productCount: productCount
-            }
-          })
-        )
-        
-        this.setData({
-          users: processedUsers
+          // 返回处理后的用户数据，确保所有字段都有默认值
+          const processedUser = {
+            _id: user._openid || `user_${Date.now()}`, // 使用 _openid 作为主要ID
+            _openid: user._openid || '未设置OpenID',
+            nickName: user.nickName || '未设置昵称',
+            avatarUrl: user.avatarUrl && user.avatarUrl.startsWith('http') ? user.avatarUrl : '/images/default-avatar.png',
+            phone: user.phone || '未绑定手机',
+            community: user.community || '未设置小区',
+            isAdmin: user.isAdmin || false,
+            adminLevel: user.adminLevel || 0,
+            createTime: user.createTime || Date.now(),
+            productCount: productCount
+          }
+          
+          console.log('处理后的用户:', processedUser)
+          return processedUser
         })
-        
-        console.log('处理后的用户数据:', processedUsers)
+      )
+      
+      this.setData({
+        users: processedUsers
+      })
+      this.setData({
+        users: [...this.data.users] // 创建新数组强制重新渲染
+      })
+      console.log('最终用户列表:', processedUsers)
+      console.log('=== 调试用户数据 ===')
+console.log('用户列表长度:', this.data.users.length)
+this.data.users.forEach((user, index) => {
+  console.log(`用户${index}:`, {
+    nickName: user.nickName,
+    _id: user._id,
+    _openid: user._openid
+  })
+})
   
-      } catch (error) {
-        console.error('加载用户数据失败:', error)
-        wx.showToast({
-          title: '加载用户失败',
-          icon: 'none'
-        })
-      }
-    },
+    } catch (error) {
+      console.error('加载用户数据失败:', error)
+      wx.showToast({
+        title: '加载用户失败',
+        icon: 'none'
+      })
+    }
+  },
   
     // 加载商品数据
     async loadProducts() {
@@ -285,17 +301,18 @@ Page({
           .get()
   
         // 处理搜索结果
-        const processedUsers = res.data.map(user => ({
-          _id: user._id || '',
-          _openid: user._openid || '未设置',
-          nickName: user.nickName || '未设置昵称',
-          avatarUrl: user.avatarUrl || '/images/default-avatar.png',
-          phone: user.phone || '未绑定手机',
-          community: user.community || '未设置小区',
-          isAdmin: user.isAdmin || false,
-          createTime: user.createTime || Date.now(),
-          productCount: 0 // 搜索时暂时不加载商品数量
-        }))
+// 处理搜索结果
+const processedUsers = res.data.map(user => ({
+    _id: user._id || user._openid || 'unknown',  // ✅ 修复：确保 _id 不为空
+    _openid: user._openid || '未设置',
+    nickName: user.nickName || '未设置昵称',
+    avatarUrl: user.avatarUrl || '/images/default-avatar.png',
+    phone: user.phone || '未绑定手机',
+    community: user.community || '未设置小区',
+    isAdmin: user.isAdmin || false,
+    createTime: user.createTime || Date.now(),
+    productCount: 0 // 搜索时暂时不加载商品数量
+  }))
   
         this.setData({
           users: processedUsers
