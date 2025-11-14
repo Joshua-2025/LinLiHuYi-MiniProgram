@@ -47,12 +47,26 @@ Page({
         const result = await db.collection('products').doc(productId).get()        
         if (result.data) {
           const product = result.data
+          // 在 const product = result.data 这行后面添加：
+console.log('🔍 商品时间字段调试:')
+console.log('createTime 值:', product.createTime)
+console.log('createTime 类型:', typeof product.createTime)
+console.log('所有商品字段:', Object.keys(product))
+// 检查所有可能的时间字段
+const timeFields = ['createTime', 'publishTime', 'timestamp', 'updateTime', 'createAt']
+timeFields.forEach(field => {
+  if (product[field]) {
+    console.log(`字段 ${field}:`, product[field], '类型:', typeof product[field])
+  }
+})
           const app = getApp()
           const currentUser = app.globalData.userInfo
-          
+                    
           // 检查是否是卖家本人
           const isSeller = currentUser && currentUser.nickName === product.sellerInfo.nickName
-          
+          // 🔧 添加：直接格式化时间字符串
+const publishTimeStr = this.formatTime(product.createTime)
+console.log('格式化后的发布时间:', publishTimeStr)
           // 添加调试日志
           console.log('🔍 商品详情调试信息:')
           console.log('当前用户:', currentUser)
@@ -62,7 +76,8 @@ Page({
           
           this.setData({
             product: product,
-            isSeller: isSeller
+            isSeller: isSeller,
+            publishTime: publishTimeStr  // 直接设置格式化后的字符串
           })
           
           this.updateViewCount(productId)
@@ -85,6 +100,7 @@ Page({
       } finally {
         wx.hideLoading()
       }
+      console.log('🔍 商品时间字段调试:')
     },
   
     // 加载留言记录

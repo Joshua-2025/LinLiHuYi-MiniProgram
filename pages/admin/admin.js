@@ -26,6 +26,8 @@ Page({
     onShow() {
       console.log('管理后台页面显示')
       this.refreshCurrentTab()
+        // 每次进入页面都刷新统计数据
+  this.loadStats()
     },
   
     // 检查管理员权限
@@ -245,54 +247,73 @@ async loadProducts() {
   },
   
     // 加载统计数据
-    async loadStats() {
-      try {
-        const db = wx.cloud.database()
-        
-        // 获取总用户数
-        const usersRes = await db.collection('users').count()
-        
-        // 获取总商品数
-        const productsRes = await db.collection('products').count()
-        
-        // 获取在售商品数
-        const activeRes = await db.collection('products')
-          .where({ status: 1 })
-          .count()
+    // 加载统计数据
+async loadStats() {
+    try {
+      const db = wx.cloud.database()
+      
+      // 获取总用户数
+      const usersRes = await db.collection('users').count()
+      
+      // 获取总商品数
+      const productsRes = await db.collection('products').count()
+      
+      // 获取在售商品数
+      const activeRes = await db.collection('products')
+        .where({ status: 1 })
+        .count()
   
-        // 获取今日发布商品数
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
-        const todayRes = await db.collection('products')
-          .where({
-            createTime: db.command.gte(today.getTime())
-          })
-          .count()
+      // 🔧 修复：获取今日发布商品数 - 使用 Date 对象进行查询
+      const today = new Date()
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0)
+      const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
+      
+      console.log('今日时间范围调试:', {
+        开始时间: startOfToday.toString(),
+        结束时间: endOfToday.toString(),
+        开始时间ISO: startOfToday.toISOString(),
+        结束时间ISO: endOfToday.toISOString()
+      })
   
-        this.setData({
-          stats: {
-            totalUsers: usersRes.total || 0,
-            totalProducts: productsRes.total || 0,
-            activeProducts: activeRes.total || 0,
-            todayPosts: todayRes.total || 0
-          }
+      // 关键修复：使用 Date 对象而不是时间戳
+      const todayRes = await db.collection('products')
+        .where({
+          createTime: db.command.and([
+            db.command.gte(startOfToday),  // 使用 Date 对象
+            db.command.lt(endOfToday)      // 使用 Date 对象
+          ])
         })
+        .count()
   
-        console.log('统计数据:', this.data.stats)
+      console.log('今日发布统计结果:', {
+        查询条件: `createTime >= ${startOfToday} AND createTime < ${endOfToday}`,
+        找到数量: todayRes.total
+      })
   
-      } catch (error) {
-        console.error('加载统计数据失败:', error)
-        // 设置默认统计数据
-        this.setData({
-          stats: {
-            totalUsers: 0,
-            totalProducts: 0,
-            activeProducts: 0,
-            todayPosts: 0
-          }
-        })
-      }
-    },
+      this.setData({
+        stats: {
+          totalUsers: usersRes.total || 0,
+          totalProducts: productsRes.total || 0,
+          activeProducts: activeRes.total || 0,
+          todayPosts: todayRes.total || 0
+        }
+      })
+  
+      console.log('修复后的统计数据:', this.data.stats)
+  
+    } catch (error) {
+      console.error('加载统计数据失败:', error)
+      // 设置默认统计数据
+      this.setData({
+        stats: {
+          totalUsers: 0,
+          totalProducts: 0,
+          activeProducts: 0,
+          todayPosts: 0
+        }
+      })
+    }
+  },
   
     // 搜索输入
     onSearchInput(e) {
@@ -574,48 +595,55 @@ async deleteProduct(e) {
     },
   
     // 格式化时间 - 修复时间显示问题
-    formatTime(timestamp) {
-      if (!timestamp) return '未知时间'
+    // 统一使用北京时间显示的格式化方法
+formatTime(timestamp) {
+    if (!timestamp) return '未知时间'
+    
+    try {
+      const date = new Date(timestamp);
       
-      try {
-        const date = new Date(timestamp)
-        const now = new Date()
-        
-        // 检查日期是否有效
-        if (isNaN(date.getTime())) {
-          return '无效时间'
-        }
-        
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const day = String(date.getDate()).padStart(2, '0')
-        const hour = String(date.getHours()).padStart(2, '0')
-        const minute = String(date.getMinutes()).padStart(2, '0')
-        
-        // 如果是今天
-        if (date.toDateString() === now.toDateString()) {
-          return `今天 ${hour}:${minute}`
-        }
-        
-        // 如果是昨天
-        const yesterday = new Date(now)
-        yesterday.setDate(now.getDate() - 1)
-        if (date.toDateString() === yesterday.toDateString()) {
-          return `昨天 ${hour}:${minute}`
-        }
-        
-        // 如果是今年
-        if (year === now.getFullYear()) {
-          return `${month}-${day} ${hour}:${minute}`
-        }
-        
-        return `${year}-${month}-${day}`
-        
-      } catch (error) {
-        console.error('格式化时间失败:', error)
-        return '时间错误'
+      // 检查日期是否有效
+      if (isNaN(date.getTime())) {
+        return '无效时间';
       }
-    },
+      
+      // 转换为北京时间 (UTC+8)
+      const beijingOffset = 8 * 60 * 60 * 1000; // 8小时的毫秒数
+      const beijingTime = new Date(date.getTime() + beijingOffset);
+      
+      const now = new Date();
+      const nowBeijing = new Date(now.getTime() + beijingOffset);
+      
+      const year = beijingTime.getUTCFullYear();
+      const month = String(beijingTime.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(beijingTime.getUTCDate()).padStart(2, '0');
+      const hour = String(beijingTime.getUTCHours()).padStart(2, '0');
+      const minute = String(beijingTime.getUTCMinutes()).padStart(2, '0');
+      
+      // 如果是今天（北京时区）
+      if (beijingTime.toISOString().slice(0, 10) === nowBeijing.toISOString().slice(0, 10)) {
+        return `今天 ${hour}:${minute}`;
+      }
+      
+      // 如果是昨天（北京时区）
+      const yesterday = new Date(nowBeijing);
+      yesterday.setUTCDate(nowBeijing.getUTCDate() - 1);
+      if (beijingTime.toISOString().slice(0, 10) === yesterday.toISOString().slice(0, 10)) {
+        return `昨天 ${hour}:${minute}`;
+      }
+      
+      // 如果是今年
+      if (year === nowBeijing.getUTCFullYear()) {
+        return `${month}-${day} ${hour}:${minute}`;
+      }
+      
+      return `${year}-${month}-${day}`;
+      
+    } catch (error) {
+      console.error('格式化时间失败:', error);
+      return '时间错误';
+    }
+  },
   
     // 下拉刷新
     onPullDownRefresh() {

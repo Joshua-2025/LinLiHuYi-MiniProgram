@@ -1,4 +1,25 @@
 <!--pages/detail/detail.wxml-->
+<wxs module="timeUtils">
+  function formatTime(date) {
+    if (!date) return '刚刚'
+    try {
+      // 处理 Date 对象
+      var d = getDate(date)
+      var month = d.getMonth() + 1
+      var day = d.getDate()
+      var hours = d.getHours().toString().padStart(2, '0')
+      var minutes = d.getMinutes().toString().padStart(2, '0')
+      return month + '月' + day + '日 ' + hours + ':' + minutes
+    } catch (error) {
+      return '刚刚'
+    }
+  }
+  
+  module.exports = {
+    formatTime: formatTime
+  }
+</wxs>
+
 <view class="detail-container" wx:if="{{product}}">
   
   <!-- 商品图片轮播 -->
@@ -33,7 +54,7 @@
       <text class="category">分类：{{product.category}}</text>
       <text class="views">浏览：{{product.viewCount}}次</text>
     </view>
-    <view class="publish-time">发布时间：{{formatTime(product.createTime)}}</view>
+    <view class="publish-time">发布时间：{{publishTime}}</view>
   </view>
 
   <!-- 卖家信息 -->
@@ -120,7 +141,7 @@
           <view class="message-content">
             <view class="message-sender">{{item.fromUserInfo.nickName}}</view>
             <view class="message-text">{{item.content}}</view>
-            <view class="message-time">{{formatTime(item.createTime)}}</view>
+            <view class="message-time">{{timeUtils.formatTime(item.createTime)}}</view>
           </view>
         </view>
       </block>
