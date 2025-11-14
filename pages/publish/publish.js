@@ -23,6 +23,8 @@ Page({
       // 检查用户是否登录
       this.checkLoginStatus()
       this.getUserInfo()
+      //临时测试记得删除
+      
     },
   
     // 检查登录状态
@@ -250,6 +252,7 @@ Page({
             images: this.data.images,
             status: 1, // 上架状态
             sellerInfo: {
+              _openid: userInfo._openid,        // 🔧 新增：存储_openid
               nickName: userInfo.nickName,
               avatarUrl: userInfo.avatarUrl || '',
               phone: this.data.phone,

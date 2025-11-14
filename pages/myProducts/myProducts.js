@@ -32,7 +32,7 @@ Page({
         // 查询我发布的商品
         const result = await db.collection('products')
           .where({
-            'sellerInfo.nickName': userInfo.nickName
+            'sellerInfo._openid': userInfo._openid  // 🔧 修改：基于_openid查询
           })
           .orderBy('createTime', 'desc')
           .get()

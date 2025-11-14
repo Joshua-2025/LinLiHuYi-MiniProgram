@@ -269,21 +269,23 @@ getUserProfileWithButton() {
   
     // 显示登录选择
     showLoginOptions() {
-      wx.showActionSheet({
-        itemList: ['微信一键登录', '自定义昵称登录'],
-        success: (res) => {
-          const tapIndex = res.tapIndex
-          if (tapIndex === 0) {
-            this.wechatLogin()
-          } else if (tapIndex === 1) {
-            this.customLogin()
-          }
-        },
-        fail: (error) => {
-          console.error('选择登录方式失败:', error)
-        }
-      })
+        this.wechatLogin()
     },
+      //wx.showActionSheet({
+        //itemList: ['微信一键登录', '自定义昵称登录'],
+        //success: (res) => {
+          //const tapIndex = res.tapIndex
+          //if (tapIndex === 0) {
+           // this.wechatLogin()
+         // } else if (tapIndex === 1) {
+          //  this.customLogin()
+         // }
+       // },
+        //fail: (error) => {
+          //console.error('选择登录方式失败:', error)
+        //}
+      //})
+    // },
   
     // 退出登录
     onLogout() {
@@ -366,47 +368,89 @@ getUserProfileWithButton() {
     },
   
     // 加载用户统计数据
-    async loadUserStats() {
-      if (!this.data.isLoggedIn) {
-        console.log('用户未登录，跳过统计加载')
-        return
-      }
+async loadUserStats() {
+    if (!this.data.isLoggedIn) {
+      console.log('用户未登录，跳过统计加载')
+      return
+    }
   
-      try {
-        const db = wx.cloud.database()
-        
-        // 获取我发布的商品数量
-        const productsRes = await db.collection('products')
-          .where({
-            'sellerInfo.nickName': this.data.userInfo.nickName
-          })
-          .count()
-        
-        // 获取收藏数量
-        const favoritesRes = await db.collection('favorites')
-          .where({
-            userId: this.data.userInfo._openid
-          })
-          .count()
-  
-        // 获取已售出数量
-        const soldRes = await db.collection('products')
-          .where({
-            'sellerInfo.nickName': this.data.userInfo.nickName,
-            status: 2
-          })
-          .count()
-  
-        this.setData({
-          myProductsCount: productsRes.total,
-          myFavoritesCount: favoritesRes.total,
-          soldCount: soldRes.total
+    try {
+      const db = wx.cloud.database()
+      
+      console.log('🔍 调试用户信息:', {
+        nickName: this.data.userInfo.nickName,
+        _openid: this.data.userInfo._openid
+      })
+      
+      // 获取我发布的商品数量
+      const productsRes = await db.collection('products')
+        .where({
+          'sellerInfo._openid': this.data.userInfo._openid
         })
+        .count()
+      
+      console.log('🔍 总商品查询结果:', {
+        查询条件: 'sellerInfo._openid = ' + this.data.userInfo._openid,
+        找到数量: productsRes.total
+      })
   
-      } catch (error) {
-        console.error('加载用户统计失败:', error)
-      }
-    },
+      // 获取收藏数量
+      const favoritesRes = await db.collection('favorites')
+        .where({
+          userId: this.data.userInfo._openid
+        })
+        .count()
+  
+      console.log('🔍 收藏查询结果:', {
+        查询条件: 'userId = ' + this.data.userInfo._openid,
+        找到数量: favoritesRes.total
+      })
+  
+      // 获取已售出数量 - 添加详细调试
+      const soldProducts = await db.collection('products')
+        .where({
+          'sellerInfo._openid': this.data.userInfo._openid,
+          status: 2
+        })
+        .get()
+      
+      console.log('🔍 已售出商品调试:', {
+        查询条件: 'sellerInfo._openid = ' + this.data.userInfo._openid + ' AND status = 2',
+        找到数量: soldProducts.data.length,
+        商品列表: soldProducts.data.map(item => ({
+          id: item._id,
+          title: item.title,
+          status: item.status
+        }))
+      })
+  
+      const soldRes = await db.collection('products')
+        .where({
+          'sellerInfo._openid': this.data.userInfo._openid,
+          status: 2
+        })
+        .count()
+  
+      console.log('🔍 已售出统计结果:', {
+        数量: soldRes.total
+      })
+  
+      this.setData({
+        myProductsCount: productsRes.total || 0,
+        myFavoritesCount: favoritesRes.total || 0,
+        soldCount: soldRes.total || 0
+      })
+  
+      console.log('🎯 最终统计数据:', {
+        我的发布: this.data.myProductsCount,
+        我的收藏: this.data.myFavoritesCount,
+        已售出: this.data.soldCount
+      })
+  
+    } catch (error) {
+      console.error('加载用户统计失败:', error)
+    }
+  },
   
     // 跳转到我的发布
     navigateToMyProducts() {
