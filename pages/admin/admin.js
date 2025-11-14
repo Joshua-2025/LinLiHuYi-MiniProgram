@@ -177,52 +177,72 @@ this.data.users.forEach((user, index) => {
   },
   
     // 加载商品数据
-    async loadProducts() {
-      try {
-        const db = wx.cloud.database()
-        let query = {}
+    // 更清晰的状态筛选逻辑
+// 加载商品数据 - 修复状态筛选和分类筛选
+async loadProducts() {
+    try {
+      const db = wx.cloud.database()
+      let query = {}
   
-        // 状态筛选
-        if (this.data.statusFilter > 0) {
-          query.status = this.data.statusFilter - 1
-        }
-  
-        const res = await db.collection('products')
-          .where(query)
-          .orderBy('createTime', 'desc')
-          .get()
-  
-        console.log('加载商品数据:', res.data)
-        
-        // 处理商品数据，确保所有字段都有值
-        const processedProducts = res.data.map(product => {
-          return {
-            _id: product._id || '',
-            title: product.title || '未设置标题',
-            price: product.price || 0,
-            category: product.category || '未分类',
-            images: product.images || ['/images/no-image.png'],
-            status: product.status || 0,
-            createTime: product.createTime || Date.now(),
-            sellerInfo: {
-              nickName: product.sellerInfo?.nickName || '未知卖家',
-              avatarUrl: product.sellerInfo?.avatarUrl || '/images/default-avatar.png'
-            }
-          }
-        })
-        
-        this.setData({
-          products: processedProducts
-        })
-  
-      } catch (error) {
-        console.error('加载商品数据失败:', error)
-        wx.showToast({
-          title: '加载商品失败',
-          icon: 'none'
-        })
+      // 状态筛选
+      const statusFilter = this.data.statusFilter
+      console.log('状态筛选索引:', statusFilter, '对应状态:', this.data.statusOptions[statusFilter])
+      
+      if (statusFilter > 0) {
+        query.status = statusFilter
       }
-    },
+  
+      // 分类筛选 - 新增分类筛选逻辑
+      const categoryFilter = this.data.categoryFilter
+      console.log('分类筛选索引:', categoryFilter, '对应分类:', this.data.categoryOptions[categoryFilter])
+      
+      if (categoryFilter > 0) {
+        // 获取选择的分类文本
+        const selectedCategory = this.data.categoryOptions[categoryFilter]
+        query.category = selectedCategory
+      }
+  
+      console.log('最终查询条件:', query)
+  
+      const res = await db.collection('products')
+        .where(query)
+        .orderBy('createTime', 'desc')
+        .get()
+  
+      console.log(`找到 ${res.data.length} 个商品`)
+      
+      // 调试信息：显示每个商品的分类和状态
+      res.data.forEach((product, index) => {
+        console.log(`商品 ${index}: "${product.title}" - 分类: ${product.category} - 状态: ${product.status} (${this.getStatusText(product.status)})`)
+      })
+      
+      // 处理商品数据
+      const processedProducts = res.data.map(product => ({
+        _id: product._id || '',
+        title: product.title || '未设置标题',
+        price: product.price || 0,
+        category: product.category || '未分类',
+        images: product.images || ['/images/no-image.png'],
+        status: product.status || 0,
+        createTime: product.createTime || Date.now(),
+        sellerInfo: {
+          nickName: product.sellerInfo?.nickName || '未知卖家',
+          avatarUrl: product.sellerInfo?.avatarUrl || '/images/default-avatar.png'
+        }
+      }))
+      
+      this.setData({
+        products: processedProducts
+      })
+  
+    } catch (error) {
+      console.error('加载商品数据失败:', error)
+      wx.showToast({
+        title: '加载商品失败',
+        icon: 'none'
+      })
+    }
+  },
   
     // 加载统计数据
     async loadStats() {
@@ -340,14 +360,16 @@ const processedUsers = res.data.map(user => ({
       this.loadProducts()
     },
   
-    // 分类筛选变化
-    onCategoryFilterChange(e) {
-      const index = parseInt(e.detail.value)
-      this.setData({
-        categoryFilter: index
-      })
-      this.loadProducts()
-    },
+// 分类筛选变化
+onCategoryFilterChange(e) {
+    const index = parseInt(e.detail.value)
+    console.log('分类筛选变化 - 选择索引:', index, '对应分类:', this.data.categoryOptions[index])
+    
+    this.setData({
+      categoryFilter: index
+    })
+    this.loadProducts()
+  },
   
     // 设为管理员
     async setAsAdmin(e) {
