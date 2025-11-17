@@ -1,4 +1,4 @@
-<!-- pages/index/index.wxml -->
+<!-- pages/index/index.wxml 001 -->
 <view class="container">
   <!-- 搜索栏 -->
   <view class="search-bar">
@@ -93,7 +93,7 @@
     </view>
   </view>
 
-  <!-- 加载更多 -->
+  <!-- 加载更多 001-->
   <view class="load-more" wx:if="{{hasMore}}">
     <text class="loading-text">加载中...</text>
   </view>

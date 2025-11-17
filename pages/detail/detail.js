@@ -148,6 +148,11 @@ console.log('格式化后的发布时间:', publishTimeStr)
     // 标记为已售出
     async markAsSold() {
       const that = this
+        // 🔒 权限校验：仅商品创建者可操作
+  if (!that.data.product || that.data.product._openid !== that.data.currentUserId) {
+    wx.showToast({ title: '只有卖家可操作', icon: 'none' });
+    return;
+  }
       wx.showModal({
         title: '确认操作',
         content: '确定要将该商品标记为已售出吗？标记后其他用户将无法购买。',
@@ -185,6 +190,10 @@ console.log('格式化后的发布时间:', publishTimeStr)
     // 重新上架商品
     async relistProduct() {
       const that = this
+      if (!that.data.product || that.data.product._openid !== that.data.currentUserId) {
+        wx.showToast({ title: '只有卖家可操作', icon: 'none' });
+        return;
+      }
       wx.showModal({
         title: '确认操作',
         content: '确定要重新上架该商品吗？',
@@ -222,6 +231,10 @@ console.log('格式化后的发布时间:', publishTimeStr)
     // 下架商品
     async offlineProduct() {
       const that = this
+      if (!that.data.product || that.data.product._openid !== that.data.currentUserId) {
+        wx.showToast({ title: '只有卖家可操作', icon: 'none' });
+        return;
+      }
       wx.showModal({
         title: '确认操作',
         content: '确定要下架该商品吗？下架后其他用户将无法看到此商品。',

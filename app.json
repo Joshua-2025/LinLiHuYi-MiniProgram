@@ -8,8 +8,9 @@
     "pages/myProducts/myProducts",
     "pages/myFavorites/myFavorites",
     "pages/messages/messages",
-    "pages/admin/admin"
-  ],
+    "pages/admin/admin",
+    "pages/soldProducts/soldProducts"
+     ],
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#07c160",
