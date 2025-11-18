@@ -179,8 +179,11 @@
   
   .action-buttons {
     display: flex;
-    flex-direction: column;
-    gap: 20rpx;
+    justify-content: space-between; /* 左右分布 */
+    align-items: center; /* 垂直居中 */
+    padding: 0 30rpx 30rpx;
+    margin-bottom: 20rpx;
+    gap: 20rpx; /* 添加间距 */
   }
   
   .button-row {
@@ -195,19 +198,14 @@
   
   /* 按钮通用样式 */
   .btn {
+    flex: 1; /* 每个按钮占一半宽度 */
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24rpx;
-    border-radius: 50rpx;
+    padding: 20rpx 0;
     font-size: 28rpx;
-    font-weight: 500;
-    border: none;
-    height: 80rpx;
-    line-height: 80rpx;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    border-radius: 50rpx;
+    min-width: 160rpx; /* 防止过窄 */
   }
   
   .btn:active {
@@ -216,19 +214,13 @@
   }
   
   /* 按钮图标样式 - 使用更具体的选择器 */
-  .seller-actions .btn-icon,
-  .buyer-actions .btn-icon {
-    margin-right: 12rpx;
+  .btn-icon {
+    margin-right: 10rpx;
     font-size: 32rpx;
-    flex-shrink: 0;
   }
   
   .btn-text {
-    flex: 1;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 28rpx;
   }
   
   /* 卖家操作按钮样式 */
@@ -276,15 +268,17 @@
   }
   
   .favorite-btn {
-    background: #fff;
-    color: #666;
+    background-color: transparent;
+    color: #999;
     border: 1rpx solid #ddd;
+    border-radius: 50rpx;
+  
   }
   
   .favorite-btn.favorited {
-    background: #ff3b30;
-    color: white;
-    border-color: transparent;
+    background-color: #f0f0f0;
+    color: #e74c3c;
+    border-color: #e74c3c;
   }
   
   /* 提示信息 */
@@ -391,4 +385,16 @@
     height: 100vh;
     font-size: 32rpx;
     color: #999;
+  }
+
+/* pages/product-detail/product-detail.wxss */
+.private-chat-btn {
+    background-color: #07c160;
+    color: white;
+    border: none;
+  }
+  
+  .private-chat-btn::before {
+    margin-right: 12rpx;
+    font-size: 36rpx;
   }

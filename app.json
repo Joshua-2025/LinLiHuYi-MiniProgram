@@ -9,8 +9,9 @@
     "pages/myFavorites/myFavorites",
     "pages/messages/messages",
     "pages/admin/admin",
-    "pages/soldProducts/soldProducts"
-     ],
+    "pages/soldProducts/soldProducts",
+    "pages/private-chat/private-chat"
+  ],
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#07c160",

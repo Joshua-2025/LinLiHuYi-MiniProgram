@@ -1,0 +1,32 @@
+<!-- pages/private-chat/private-chat.wxml -->
+<view class="container">
+  <!-- 消息列表 -->
+  <scroll-view 
+    class="message-list" 
+    scroll-y 
+    scroll-with-animation 
+    scroll-into-view="{{lastMessageId}}"
+  >
+    <block wx:for="{{messages}}" wx:key="_id">
+      <view class="message-item {{item.isMine ? 'mine' : 'theirs'}}">
+        <view class="message-bubble {{item.isMine ? 'mine-bubble' : 'theirs-bubble'}}">
+          {{item.content}}
+        </view>
+        <view class="message-time">{{item.createTimeStr}}</view>
+      </view>
+    </block>
+  </scroll-view>
+
+  <!-- 输入区域 -->
+  <view class="input-area">
+    <input
+      class="input"
+      value="{{inputContent}}"
+      bindinput="onInput"
+      placeholder="请输入消息..."
+      confirm-type="send"
+      bindconfirm="sendMessage"
+    />
+    <button class="send-btn" bindtap="sendMessage">发送</button>
+  </view>
+</view>

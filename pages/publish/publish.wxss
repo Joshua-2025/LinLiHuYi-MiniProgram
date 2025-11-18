@@ -22,6 +22,12 @@
     margin-bottom: 20rpx;
     font-weight: 500;
   }
+
+  .optional {
+    color: #999;
+    font-size: 28rpx;
+    font-weight: normal;
+  }
   
   .form-input {
     width: 100%;

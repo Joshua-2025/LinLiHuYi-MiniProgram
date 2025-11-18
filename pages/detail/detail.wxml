@@ -1,9 +1,8 @@
-<!--pages/detail/detail.wxml-->
+<!-- pages/detail/detail.wxml -->
 <wxs module="timeUtils">
   function formatTime(date) {
     if (!date) return '刚刚'
     try {
-      // 处理 Date 对象
       var d = getDate(date)
       var month = d.getMonth() + 1
       var day = d.getDate()
@@ -75,7 +74,7 @@
   <view class="seller-actions" wx:if="{{isSeller}}">
     <view class="action-title">我的商品管理</view>
     <view class="action-buttons">
-      <!-- 在售状态显示标记为已售出和下架 -->
+      <!-- 在售状态 -->
       <view class="button-row" wx:if="{{product.status === 1}}">
         <button class="btn sold-btn" bindtap="markAsSold">
           <text class="btn-icon">✅</text>
@@ -87,16 +86,8 @@
         </button>
       </view>
       
-      <!-- 已售出状态显示重新上架 -->
-      <view class="button-row" wx:if="{{product.status === 3}}">
-        <button class="btn relist-btn" bindtap="relistProduct">
-          <text class="btn-icon">🔄</text>
-          <text class="btn-text">重新上架</text>
-        </button>
-      </view>
-      
-      <!-- 已下架状态显示重新上架 -->
-      <view class="button-row" wx:if="{{product.status === 2}}">
+      <!-- 已售出或已下架：显示重新上架 -->
+      <view class="button-row" wx:if="{{product.status === 3 || product.status === 2}}">
         <button class="btn relist-btn" bindtap="relistProduct">
           <text class="btn-icon">🔄</text>
           <text class="btn-text">重新上架</text>
@@ -108,30 +99,38 @@
   <!-- 买家操作区域 -->
   <view class="buyer-actions" wx:else>
     <view class="action-buttons">
-      <button class="btn contact-btn" bindtap="contactSeller">
-        <text class="btn-icon">💬</text>
-        <text class="btn-text">联系卖家</text>
+      <!-- ✅ 私聊卖家（独立按钮，不再嵌套） -->
+      <button 
+        class="btn private-chat-btn" 
+        bindtap="startPrivateChat"
+      >
+        💬 私聊卖家
       </button>
-      <button class="btn favorite-btn {{isFavorite ? 'favorited' : ''}}" bindtap="toggleFavorite">
+
+      <!-- 收藏按钮 -->
+      <button 
+        class="btn favorite-btn {{isFavorite ? 'favorited' : ''}}" 
+        bindtap="toggleFavorite"
+      >
         <text class="btn-icon">{{isFavorite ? '❤️' : '🤍'}}</text>
         <text class="btn-text">{{isFavorite ? '已收藏' : '收藏'}}</text>
       </button>
     </view>
+
     
-    <!-- 已售出商品提示 -->
+    <!-- 状态提示 -->
     <view class="sold-notice" wx:if="{{product.status === 3}}">
       <text class="notice-icon">ℹ️</text>
       <text class="notice-text">该商品已售出</text>
     </view>
     
-    <!-- 已下架商品提示 -->
     <view class="offline-notice" wx:if="{{product.status === 2}}">
       <text class="notice-icon">⏸️</text>
       <text class="notice-text">该商品已下架</text>
     </view>
   </view>
 
-  <!-- 留言列表 -->
+  <!-- 公开留言列表 -->
   <view class="message-section" wx:if="{{showMessages && messages.length > 0}}">
     <view class="section-title">留言记录</view>
     <view class="message-list">
@@ -150,6 +149,7 @@
 
 </view>
 
+<!-- 加载中 -->
 <view class="loading" wx:else>
   <text>加载中...</text>
 </view>

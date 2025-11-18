@@ -9,8 +9,21 @@ Page({
       currentUserId: '',
       isSeller: false // 新增：是否是卖家本人
     },
+    startPrivateChat() {
+        const productId = this.data.product._id
+        if (!productId) {
+          wx.showToast({ title: '商品ID无效', icon: 'none' })
+          return
+        }
+        wx.navigateTo({
+          url: `/pages/private-chat/private-chat?productId=${productId}`
+        })
+      },
   
     onLoad(options) {
+        wx.setNavigationBarTitle({
+            title: '商品详情'
+          })
       if (options.id) {
         this.setData({ 
           productId: options.id,
@@ -26,6 +39,7 @@ Page({
               wx.navigateBack()
             }, 1500)
           }
+          
         })
       }
     },
@@ -61,20 +75,41 @@ timeFields.forEach(field => {
 })
           const app = getApp()
           const currentUser = app.globalData.userInfo
-                    
-          // 检查是否是卖家本人
-          const isSeller = currentUser && currentUser.nickName === product.sellerInfo.nickName
-          // 🔧 添加：直接格式化时间字符串
-const publishTimeStr = this.formatTime(product.createTime)
-console.log('格式化后的发布时间:', publishTimeStr)
-          // 添加调试日志
-          console.log('🔍 商品详情调试信息:')
-          console.log('当前用户:', currentUser)
-          console.log('商品卖家:', product.sellerInfo.nickName)
-          console.log('是否是卖家:', isSeller)
-          console.log('商品状态:', product.status)
-          
-          this.setData({
+           // ✅ 安全判断是否是卖家：使用 _openid（强烈推荐）
+const isSeller = product._openid === (currentUser ? currentUser._openid : '')
+
+// ✅ 安全处理 createTime 字段（支持 Timestamp / Date / string）
+let publishTimeStr = '刚刚'
+if (product.createTime) {
+  let dateObj = null
+  const ct = product.createTime
+
+  if (ct instanceof Date) {
+    // 已经是 JS Date 对象
+    dateObj = ct
+  } else if (typeof ct === 'object' && ct !== null && typeof ct._seconds === 'number') {
+    // 是云数据库的 Timestamp 对象
+    dateObj = new Date(ct._seconds * 1000 + Math.floor((ct._nanoseconds || 0) / 1000000))
+  } else if (typeof ct === 'string') {
+    // 是 ISO 字符串或其他字符串
+    dateObj = new Date(ct)
+  }
+
+  // 验证日期有效
+  if (dateObj && !isNaN(dateObj.getTime())) {
+    publishTimeStr = this.formatTime(dateObj.toISOString()) // 传 ISO 字符串给 formatTime
+  }
+}
+
+// 添加调试日志
+console.log('🔍 商品详情调试信息:')
+console.log('当前用户:', currentUser)
+console.log('商品卖家 openid:', product._openid)
+console.log('当前用户 openid:', currentUser?._openid)
+console.log('是否是卖家:', isSeller)
+console.log('商品状态:', product.status)      
+         
+            this.setData({
             product: product,
             isSeller: isSeller,
             publishTime: publishTimeStr  // 直接设置格式化后的字符串
@@ -104,24 +139,52 @@ console.log('格式化后的发布时间:', publishTimeStr)
     },
   
     // 加载留言记录
-    async loadMessages(productId) {
-      try {
-        const db = wx.cloud.database()
-        const result = await db.collection('messages')
-          .where({
-            productId: productId
-          })
-          .orderBy('createTime', 'asc')
-          .get()
-        
-        this.setData({
-          messages: result.data,
-          showMessages: result.data.length > 0
+    // 加载留言记录
+async loadMessages(productId) {
+    try {
+      const db = wx.cloud.database()
+      const result = await db.collection('messages')
+        .where({
+          productId: productId
         })
-      } catch (error) {
-        console.error('加载留言失败:', error)
-      }
-    },
+        .orderBy('createTime', 'asc')
+        .get()
+  
+      // 🔧 转换每条留言的 createTime 为 ISO 字符串，供 WXS 安全使用
+      const messages = result.data.map(msg => {
+        let formattedCreateTime = ''
+        const ct = msg.createTime
+  
+        if (ct) {
+          let dateObj = null
+          if (ct instanceof Date) {
+            dateObj = ct
+          } else if (typeof ct === 'object' && ct !== null && typeof ct._seconds === 'number') {
+            // 云数据库 Timestamp
+            dateObj = new Date(ct._seconds * 1000 + Math.floor((ct._nanoseconds || 0) / 1000000))
+          } else if (typeof ct === 'string') {
+            dateObj = new Date(ct)
+          }
+  
+          if (dateObj && !isNaN(dateObj.getTime())) {
+            formattedCreateTime = dateObj.toISOString()
+          }
+        }
+  
+        return {
+          ...msg,
+          createTime: formattedCreateTime // 替换为标准 ISO 字符串
+        }
+      })
+  
+      this.setData({
+        messages: messages,
+        showMessages: messages.length > 0
+      })
+    } catch (error) {
+      console.error('加载留言失败:', error)
+    }
+  },
   
     // 获取状态文本
     getStatusText(status) {
@@ -329,19 +392,20 @@ console.log('格式化后的发布时间:', publishTimeStr)
     },
   
     // 时间格式化
-    formatTime(dateString) {
-      if (!dateString) return '刚刚'
-      try {
-        const date = new Date(dateString)
+    formatTime(input) {
+        if (!input) return '刚刚'
+        
+        const date = new Date(input)
+        if (isNaN(date.getTime())) {
+          return '刚刚'
+        }
+      
         const month = date.getMonth() + 1
         const day = date.getDate()
-        const hours = date.getHours().toString().padStart(2, '0')
-        const minutes = date.getMinutes().toString().padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const minutes = String(date.getMinutes()).padStart(2, '0')
         return `${month}月${day}日 ${hours}:${minutes}`
-      } catch (error) {
-        return '刚刚'
-      }
-    },
+      },
   
     // 联系卖家 - 添加留言选项
     contactSeller() {

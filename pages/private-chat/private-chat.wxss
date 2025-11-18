@@ -1,0 +1,85 @@
+/* pages/private-chat/private-chat.wxss */
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #f0f0f0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .message-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20rpx;
+    box-sizing: border-box;
+  }
+  
+  .message-item {
+    display: flex;
+    margin-bottom: 20rpx;
+    max-width: 80%;
+  }
+  
+  .message-item.theirs {
+    justify-content: flex-start;
+  }
+  
+  .message-item.mine {
+    justify-content: flex-end;
+    align-self: flex-end;
+  }
+  
+  .message-bubble {
+    padding: 20rpx 24rpx;
+    border-radius: 12rpx;
+    font-size: 28rpx;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  
+  .theirs-bubble {
+    background-color: white;
+    color: #333;
+    border: 1rpx solid #e0e0e0;
+  }
+  
+  .mine-bubble {
+    background-color: #dcf8c6;
+    color: #000;
+  }
+  
+  .message-time {
+    font-size: 20rpx;
+    color: #999;
+    margin-top: 8rpx;
+    text-align: center;
+    min-width: 120rpx;
+  }
+  
+  /* 输入区域 */
+  .input-area {
+    display: flex;
+    align-items: center;
+    padding: 20rpx;
+    background-color: white;
+    border-top: 1rpx solid #ddd;
+    width: 100%;
+  }
+  
+  .input {
+    flex: 1;
+    padding: 20rpx;
+    background-color: #f9f9f9;
+    border-radius: 8rpx;
+    font-size: 28rpx;
+    margin-right: 20rpx;
+  }
+  
+  .send-btn {
+    width: 120rpx;
+    height: 60rpx;
+    background-color: #07c160;
+    color: white;
+    border-radius: 8rpx;
+    font-size: 28rpx;
+  }

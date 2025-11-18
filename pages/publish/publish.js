@@ -66,12 +66,19 @@ Page({
     },
   
     onInput(e) {
-      const { field } = e.currentTarget.dataset
-      this.setData({
-        [field]: e.detail.value
-      })
-    },
-  
+        const { field } = e.currentTarget.dataset
+        const value = e.detail.value
+        // 对 phone 字段自动去除首尾空格
+        if (field === 'phone') {
+          this.setData({
+            [field]: value.trim()
+          })
+        } else {
+          this.setData({
+            [field]: value
+          })
+        }
+      },
     onCategoryChange(e) {
       const index = e.detail.value
       this.setData({
@@ -199,13 +206,7 @@ Page({
         wx.showToast({ title: '请选择商品分类', icon: 'none' })
         return false
       }
-  
-      if (!phone) {
-        wx.showToast({ title: '请输入联系方式', icon: 'none' })
-        return false
-      }
-  
-      // 修改：小区验证逻辑
+        // 修改：小区验证逻辑
       if (!community.trim()) {
         wx.showToast({ title: '请选择或输入小区', icon: 'none' })
         return false
@@ -255,7 +256,7 @@ Page({
               _openid: userInfo._openid,        // 🔧 新增：存储_openid
               nickName: userInfo.nickName,
               avatarUrl: userInfo.avatarUrl || '',
-              phone: this.data.phone,
+              phone: this.data.phone.trim(), // 确保无多余空格
               community: this.data.community.trim()
             },
             viewCount: 0,
