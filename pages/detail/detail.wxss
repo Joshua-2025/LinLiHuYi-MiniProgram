@@ -162,8 +162,9 @@
     color: #666;
   }
   
-  /* 卖家操作区域 */
-  .seller-actions {
+  /* 操作区域通用 */
+  .seller-actions,
+  .buyer-actions {
     background: white;
     padding: 30rpx;
     margin: 20rpx 0;
@@ -188,18 +189,18 @@
     gap: 20rpx;
   }
   
-  .button-row .btn {
-    flex: 1;
-    min-width: 0;
-  }
-  
-  /* 按钮通用样式 */
+  /* ✅ 所有按钮统一样式 */
   .btn {
+<<<<<<< Updated upstream
+=======
+    flex: 1;
+>>>>>>> Stashed changes
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 24rpx;
     border-radius: 50rpx;
+<<<<<<< Updated upstream
     font-size: 28rpx;
     font-weight: 500;
     border: none;
@@ -208,6 +209,10 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+=======
+    min-width: 160rpx;
+    margin: 0 10rpx;
+>>>>>>> Stashed changes
   }
   
   .btn:active {
@@ -215,14 +220,20 @@
     transform: scale(0.98);
   }
   
+<<<<<<< Updated upstream
   /* 按钮图标样式 - 使用更具体的选择器 */
   .seller-actions .btn-icon,
   .buyer-actions .btn-icon {
     margin-right: 12rpx;
+=======
+  .btn-icon {
+    margin-right: 10rpx;
+>>>>>>> Stashed changes
     font-size: 32rpx;
     flex-shrink: 0;
   }
   
+<<<<<<< Updated upstream
   .btn-text {
     flex: 1;
     text-align: center;
@@ -232,6 +243,9 @@
   }
   
   /* 卖家操作按钮样式 */
+=======
+  /* 按钮颜色 */
+>>>>>>> Stashed changes
   .sold-btn {
     background: #ff6b35;
     color: white;
@@ -247,32 +261,10 @@
     color: white;
   }
   
-  /* 单按钮居中显示 */
-  .button-row:only-child .btn {
-    max-width: 300rpx;
-    margin: 0 auto;
-  }
-  
-  /* 买家操作区域 */
-  .buyer-actions {
-    background: white;
-    padding: 30rpx;
-    margin: 20rpx 0;
-  }
-  
-  .buyer-actions .action-buttons {
-    display: flex;
-    flex-direction: row;
-    gap: 20rpx;
-  }
-  
-  .buyer-actions .btn {
-    flex: 1;
-  }
-  
-  .contact-btn {
-    background: #07c160;
+  .private-chat-btn {
+    background-color: #07c160;
     color: white;
+    border: none;
   }
   
   .favorite-btn {
@@ -288,7 +280,8 @@
   }
   
   /* 提示信息 */
-  .sold-notice, .offline-notice {
+  .sold-notice,
+  .offline-notice {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -307,19 +300,6 @@
   
   .notice-text {
     font-weight: 500;
-  }
-  
-  /* 底部操作按钮区域 */
-  .action-section {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    padding: 20rpx 30rpx;
-    display: flex;
-    gap: 20rpx;
-    border-top: 1rpx solid #f0f0f0;
   }
   
   /* 留言相关样式 */

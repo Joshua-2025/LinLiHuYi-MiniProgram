@@ -1,0 +1,105 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #f0f0f0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .message-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20rpx;
+    box-sizing: border-box;
+  }
+  
+  .message-item {
+    margin-bottom: 30rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* 默认：对方消息靠左 */
+  }
+  
+  /* 自己消息整体靠右 */
+  .message-item.mine {
+    align-items: flex-end;
+  }
+  
+  .sender-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10rpx;
+  }
+  
+  /* 自己消息中，头像在右侧 */
+  .message-item.mine .sender-info {
+    flex-direction: row-reverse;
+  }
+  
+  .avatar {
+    width: 60rpx;
+    height: 60rpx;
+    border-radius: 50%;
+    margin-right: 10rpx;
+  }
+  
+  /* 自己消息中，头像 margin 调整 */
+  .message-item.mine .avatar {
+    margin-right: 0;
+    margin-left: 10rpx;
+  }
+  
+  .nickname {
+    font-size: 24rpx;
+    color: #333;
+  }
+  
+  .message-bubble {
+    max-width: 70%;
+    padding: 20rpx;
+    border-radius: 10rpx;
+    position: relative;
+    word-wrap: break-word;
+    margin-bottom: 10rpx;
+  }
+  
+  .theirs-bubble {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    align-self: flex-start;
+  }
+  
+  .mine-bubble {
+    background-color: #b2e281;
+    color: #000;
+    align-self: flex-end;
+  }
+  
+  .message-time {
+    font-size: 20rpx;
+    color: #999;
+    margin-top: 5rpx;
+  }
+  
+  .input-area {
+    display: flex;
+    padding: 10rpx;
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+  }
+  
+  .input {
+    flex: 1;
+    padding: 15rpx;
+    border: 1px solid #ddd;
+    border-radius: 10rpx;
+    margin-right: 15rpx;
+  }
+  
+  .send-btn {
+    padding: rpx 20rpx;
+    border: none;
+    border-radius: 10rpx;
+    background-color: #1aad19;
+    color: #fff;
+  }

@@ -81,23 +81,44 @@
           <text class="btn-text">重新上架</text>
         </button>
       </view>
+
+      <!-- ✅ 新增：卖家查看私聊（关键！） -->
+      <view class="button-row">
+        <button class="btn private-chat-btn" bindtap="startPrivateChat">
+          💬 查看私聊
+        </button>
+      </view>
     </view>
   </view>
 
   <!-- 买家操作区域 -->
   <view class="buyer-actions" wx:else>
     <view class="action-buttons">
+<<<<<<< Updated upstream
       <button class="btn contact-btn" bindtap="contactSeller">
         <text class="btn-icon">💬</text>
         <text class="btn-text">联系卖家</text>
+=======
+      <!-- 私聊卖家 -->
+      <button 
+        class="btn private-chat-btn" 
+        bindtap="startPrivateChat"
+      >
+        💬 私聊卖家
+>>>>>>> Stashed changes
       </button>
       <button class="btn favorite-btn {{isFavorite ? 'favorited' : ''}}" bindtap="toggleFavorite">
         <text class="btn-icon">{{isFavorite ? '❤️' : '🤍'}}</text>
         <text class="btn-text">{{isFavorite ? '已收藏' : '收藏'}}</text>
       </button>
     </view>
+<<<<<<< Updated upstream
     
     <!-- 已售出商品提示 -->
+=======
+
+    <!-- 状态提示 -->
+>>>>>>> Stashed changes
     <view class="sold-notice" wx:if="{{product.status === 3}}">
       <text class="notice-icon">ℹ️</text>
       <text class="notice-text">该商品已售出</text>

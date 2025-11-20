@@ -1,0 +1,41 @@
+<view class="container">
+  <scroll-view class="message-list" scroll-y scroll-with-animation>
+    <block wx:for="{{messages}}" wx:key="_id">
+      <!-- 对方消息（靠左） -->
+      <view wx:if="{{!item.isMine}}" class="message-item theirs">
+        <view class="sender-info">
+          <image class="avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+          <text class="nickname">{{item.nickName}}</text>
+        </view>
+        <view class="message-bubble theirs-bubble">
+          {{item.content}}
+        </view>
+        <view class="message-time">{{item.createTimeStr}}</view>
+      </view>
+
+      <!-- 自己消息（靠右） -->
+      <view wx:else class="message-item mine">
+        <view class="sender-info">
+          <text class="nickname">{{item.nickName}}</text>
+          <image class="avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+        </view>
+        <view class="message-bubble mine-bubble">
+          {{item.content}}
+        </view>
+        <view class="message-time">{{item.createTimeStr}}</view>
+      </view>
+    </block>
+  </scroll-view>
+
+  <view class="input-area">
+    <input
+      class="input"
+      value="{{inputContent}}"
+      bindinput="onInput"
+      placeholder="请输入消息..."
+      confirm-type="send"
+      bindconfirm="sendMessage"
+    />
+    <button class="send-btn" bindtap="sendMessage">发送</button>
+  </view>
+</view>
