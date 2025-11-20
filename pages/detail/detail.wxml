@@ -93,13 +93,20 @@
           <text class="btn-text">重新上架</text>
         </button>
       </view>
+
+      <!-- ✅ 新增：卖家查看私聊（关键！） -->
+      <view class="button-row">
+        <button class="btn private-chat-btn" bindtap="startPrivateChat">
+          💬 查看私聊
+        </button>
+      </view>
     </view>
   </view>
 
   <!-- 买家操作区域 -->
   <view class="buyer-actions" wx:else>
     <view class="action-buttons">
-      <!-- ✅ 私聊卖家（独立按钮，不再嵌套） -->
+      <!-- 私聊卖家 -->
       <button 
         class="btn private-chat-btn" 
         bindtap="startPrivateChat"
@@ -117,7 +124,6 @@
       </button>
     </view>
 
-    
     <!-- 状态提示 -->
     <view class="sold-notice" wx:if="{{product.status === 3}}">
       <text class="notice-icon">ℹ️</text>

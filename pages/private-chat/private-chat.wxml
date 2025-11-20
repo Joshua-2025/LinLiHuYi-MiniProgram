@@ -1,15 +1,25 @@
-<!-- pages/private-chat/private-chat.wxml -->
 <view class="container">
-  <!-- 消息列表 -->
-  <scroll-view 
-    class="message-list" 
-    scroll-y 
-    scroll-with-animation 
-    scroll-into-view="{{lastMessageId}}"
-  >
+  <scroll-view class="message-list" scroll-y scroll-with-animation>
     <block wx:for="{{messages}}" wx:key="_id">
-      <view class="message-item {{item.isMine ? 'mine' : 'theirs'}}">
-        <view class="message-bubble {{item.isMine ? 'mine-bubble' : 'theirs-bubble'}}">
+      <!-- 对方消息（靠左） -->
+      <view wx:if="{{!item.isMine}}" class="message-item theirs">
+        <view class="sender-info">
+          <image class="avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+          <text class="nickname">{{item.nickName}}</text>
+        </view>
+        <view class="message-bubble theirs-bubble">
+          {{item.content}}
+        </view>
+        <view class="message-time">{{item.createTimeStr}}</view>
+      </view>
+
+      <!-- 自己消息（靠右） -->
+      <view wx:else class="message-item mine">
+        <view class="sender-info">
+          <text class="nickname">{{item.nickName}}</text>
+          <image class="avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+        </view>
+        <view class="message-bubble mine-bubble">
           {{item.content}}
         </view>
         <view class="message-time">{{item.createTimeStr}}</view>
@@ -17,7 +27,6 @@
     </block>
   </scroll-view>
 
-  <!-- 输入区域 -->
   <view class="input-area">
     <input
       class="input"

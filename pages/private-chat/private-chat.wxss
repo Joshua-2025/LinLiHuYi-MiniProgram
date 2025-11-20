@@ -1,4 +1,3 @@
-/* pages/private-chat/private-chat.wxss */
 .container {
     display: flex;
     flex-direction: column;
@@ -15,71 +14,92 @@
   }
   
   .message-item {
+    margin-bottom: 30rpx;
     display: flex;
-    margin-bottom: 20rpx;
-    max-width: 80%;
+    flex-direction: column;
+    align-items: flex-start; /* 默认：对方消息靠左 */
   }
   
-  .message-item.theirs {
-    justify-content: flex-start;
-  }
-  
+  /* 自己消息整体靠右 */
   .message-item.mine {
-    justify-content: flex-end;
-    align-self: flex-end;
+    align-items: flex-end;
+  }
+  
+  .sender-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10rpx;
+  }
+  
+  /* 自己消息中，头像在右侧 */
+  .message-item.mine .sender-info {
+    flex-direction: row-reverse;
+  }
+  
+  .avatar {
+    width: 60rpx;
+    height: 60rpx;
+    border-radius: 50%;
+    margin-right: 10rpx;
+  }
+  
+  /* 自己消息中，头像 margin 调整 */
+  .message-item.mine .avatar {
+    margin-right: 0;
+    margin-left: 10rpx;
+  }
+  
+  .nickname {
+    font-size: 24rpx;
+    color: #333;
   }
   
   .message-bubble {
-    padding: 20rpx 24rpx;
-    border-radius: 12rpx;
-    font-size: 28rpx;
-    line-height: 1.4;
-    word-break: break-word;
+    max-width: 70%;
+    padding: 20rpx;
+    border-radius: 10rpx;
+    position: relative;
+    word-wrap: break-word;
+    margin-bottom: 10rpx;
   }
   
   .theirs-bubble {
-    background-color: white;
-    color: #333;
-    border: 1rpx solid #e0e0e0;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    align-self: flex-start;
   }
   
   .mine-bubble {
-    background-color: #dcf8c6;
+    background-color: #b2e281;
     color: #000;
+    align-self: flex-end;
   }
   
   .message-time {
     font-size: 20rpx;
     color: #999;
-    margin-top: 8rpx;
-    text-align: center;
-    min-width: 120rpx;
+    margin-top: 5rpx;
   }
   
-  /* 输入区域 */
   .input-area {
     display: flex;
-    align-items: center;
     padding: 20rpx;
-    background-color: white;
-    border-top: 1rpx solid #ddd;
-    width: 100%;
+    background-color: #fff;
+    border-top: 1px solid #ddd;
   }
   
   .input {
     flex: 1;
-    padding: 20rpx;
-    background-color: #f9f9f9;
-    border-radius: 8rpx;
-    font-size: 28rpx;
-    margin-right: 20rpx;
+    padding: 15rpx;
+    border: 1px solid #ddd;
+    border-radius: 10rpx;
+    margin-right: 15rpx;
   }
   
   .send-btn {
-    width: 120rpx;
-    height: 60rpx;
-    background-color: #07c160;
-    color: white;
-    border-radius: 8rpx;
-    font-size: 28rpx;
+    padding: 10rpx 20rpx;
+    border: none;
+    border-radius: 10rpx;
+    background-color: #1aad19;
+    color: #fff;
   }
